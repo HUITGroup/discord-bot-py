@@ -3,18 +3,17 @@ import logging
 from pathlib import Path
 
 import discord
-from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
 
 ABS = Path(__file__).resolve().parents[1]
-load_dotenv(ABS / 'assets' / '.env')
+load_dotenv(ABS / '.env')
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = -1
 
-EXTENSIONS = ['cogs.member_year']
+EXTENSIONS = ['cogs.member_year', 'cogs.timeline']
 
 intents = discord.Intents.default()
 intents.message_content = True
