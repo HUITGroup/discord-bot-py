@@ -11,12 +11,12 @@ ABS = Path(__file__).resolve().parents[1]
 load_dotenv(ABS / '.env')
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-GUILD_ID = -1
 
-EXTENSIONS = ['cogs.member_year', 'cogs.timeline']
+EXTENSIONS = ['cogs.member_year', 'cogs.timeline', 'cogs.member_join']
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 activity = discord.Activity(name="/help", type=discord.ActivityType.playing)
 
