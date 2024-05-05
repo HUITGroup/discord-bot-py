@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 
 ABS = Path(__file__).resolve().parents[2]
-load_dotenv(ABS / 'assets' / '.env')
+load_dotenv(ABS / '.env')
 
 BOT_ROLE_ID = int(os.getenv("BOT_ROLE_ID"))
 
@@ -17,20 +17,33 @@ JST = tz(td(hours=9), 'JST')
 
 
 class Selection(discord.ui.View):
-  def __init__(self, year: str):
+  def __init__(self, user: discord.Member, year: str):
     super().__init__(timeout=None)
+    self.user = user
     self.year = year
+
+  async def disable_buttons(self, interaction: discord.Interaction):
+    for button in self.children:
+      button.disabled = True
+
+    await interaction.response.edit_message(embed=None, view=self)
 
   @discord.ui.button(label="OK", style=discord.ButtonStyle.success)
   async def ok(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.send_message("ロール作成を開始します...")
-    await interaction.message.delete()
+    if interaction.user != self.user:
+      return
+
+    await self.disable_buttons(interaction)
+    await interaction.channel.send("ロール作成を開始します...")
     await _create(interaction, self.year)
 
   @discord.ui.button(label="Cancel", style=discord.ButtonStyle.gray)
   async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.send_message("キャンセルしました")
-    await interaction.message.delete()
+    if interaction.user != self.user:
+      return
+
+    await self.disable_buttons(interaction)
+    await interaction.channel.send("キャンセルしました")
 
 async def _create(interaction: discord.Interaction, year: str):
   guild = interaction.guild
@@ -129,17 +142,22 @@ class MemberYear(commands.Cog):
     self.bot = bot
 
   @app_commands.command(name="create", description='member-{year} ロールを作成し、関連する権限を自動で設定します。yearに次年度以外の数値を入れると警告が表示されます。')
+  @app_commands.checks.has_permissions(administrator=True)
   async def create(self, interaction: discord.Interaction, year: str):
     this_year = int(dt.now(JST).year)
 
     if f'member-{year}' in interaction.guild.roles:
-      await interaction.response.send_message(f'Role `member-{year}` already exists. If you want to overwrite the role, lease delete it and try again.')
+      await interaction.response.send_message(f'`member-{year}` は既に存在します。再作成したい場合は、一度消してからコマンドを実行してください。')
     elif year != str(this_year):
-      selection = Selection(interaction, year)
-      await interaction.response.send_message(f'You are attempting to create member-{year} which is not for this fiscal year. Are you sure to create member-{year}?', view=selection)
+      selection = Selection(interaction.user, year)
+      await interaction.response.send_message(f'member-{year} は次年度用ではありません。作成しますか?', view=selection)
     else:
       await _create(interaction, year)
 
+  @app_commands.command(name="schedule_delete", description='member-{year} ロールを指定年月日 0:00 に削除します。過去の年月日を指定した場合警告が出ますが、強制的に実行すると即時削除されます。')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def schedule_delete(self, interaction: discord.Interaction, member_year: str, yyyy: str, mm: str, dd: str):
+    ...
+
 async def setup(bot: commands.Bot):
   await bot.add_cog(MemberYear(bot))
-

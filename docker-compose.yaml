@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:16.2
+    restart: always
+    env_file: .env
+
+  huit-bot:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file: .env
