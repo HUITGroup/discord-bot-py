@@ -22,7 +22,7 @@ class Handler:
   def __init__(self) -> None:
     while True:
       try:
-        self.conn = psycopg2.connect(host=POSTGRES_ADDRESS, dbname=POSTGRES_DATABASE, user=POSTGRES_USER, password=POSTGRES_PASSWORD)
+        self.conn = psycopg2.connect(host='discord-bot-py-db-1', dbname=POSTGRES_DATABASE, user=POSTGRES_USER, password=POSTGRES_PASSWORD, port=POSTGRES_PORT)
 
         break
       except psycopg2.OperationalError as e:

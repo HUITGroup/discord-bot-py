@@ -3,6 +3,9 @@ services:
     image: postgres:16.2
     restart: always
     env_file: .env
+    ports:
+      - ${POSTGRES_PORT}:3306
+    command: -p ${POSTGRES_PORT}
 
   huit-bot:
     depends_on:
