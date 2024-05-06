@@ -57,41 +57,61 @@ class Handler:
 
   def get_timeline_channel_id(self, guild_id: int) -> Optional[int]:
     with self.conn.cursor() as cur:
-      cur.execute('SELECT timeline_id FROM timeline_channel WHERE guild_id = %s', (guild_id, ))
-      timeline_channel_id = cur.fetchone()
+      try:
+        cur.execute('SELECT timeline_id FROM timeline_channel WHERE guild_id = %s', (guild_id, ))
+        timeline_channel_id = cur.fetchone()
+      except Exception as e:
+        print(e)
+        timeline_channel_id = None
 
     timeline_channel_id = timeline_channel_id[0] if timeline_channel_id else None
     return timeline_channel_id
 
   def get_timeline_message_id(self, original_message_id: int) -> Optional[int]:
     with self.conn.cursor() as cur:
-      cur.execute('SELECT timeline_message_id FROM timeline_message WHERE original_message_id = %s', (original_message_id, ))
-      timeline_message_id = cur.fetchone()
+      try:
+        cur.execute('SELECT timeline_message_id FROM timeline_message WHERE original_message_id = %s', (original_message_id, ))
+        timeline_message_id = cur.fetchone()
+      except Exception as e:
+        print(e)
+        timeline_message_id = None
 
     timeline_message_id = timeline_message_id[0] if timeline_message_id else None
     return timeline_message_id
 
   def del_timeline(self, original_message_id: int) -> None:
     with self.conn.cursor() as cur:
-      cur.execute('DELETE FROM timeline_message WHERE original_message_id = %s', (original_message_id, ))
-      self.conn.commit()
-
-    return
+      try:
+        cur.execute('DELETE FROM timeline_message WHERE original_message_id = %s', (original_message_id, ))
+        self.conn.commit()
+      except Exception as e:
+        print(e)
 
   def register_timeline_channel(self, guild_id: int, channel_id: int) -> None:
     with self.conn.cursor() as cur:
-      cur.execute('INSERT INTO timeline_channel(guild_id, timeline_id) VALUES(%s, %s) ON CONFLICT (guild_id) DO UPDATE SET timeline_id = %s', (guild_id, channel_id, channel_id))
-      self.conn.commit()
+      try:
+        cur.execute('INSERT INTO timeline_channel(guild_id, timeline_id) VALUES(%s, %s) ON CONFLICT (guild_id) DO UPDATE SET timeline_id = %s', (guild_id, channel_id, channel_id))
+        self.conn.commit()
+      except Exception as e:
+        print(e)
 
   def register_message(self, timeline_message_id: int, original_message_id: int) -> None:
     with self.conn.cursor() as cur:
-      cur.execute('INSERT INTO timeline_message(timeline_message_id, original_message_id) VALUES(%s, %s)', (timeline_message_id, original_message_id))
-      self.conn.commit()
+      try:
+        cur.execute('INSERT INTO timeline_message(timeline_message_id, original_message_id) VALUES(%s, %s)', (timeline_message_id, original_message_id))
+        self.conn.commit()
+      except Exception as e:
+        print(e)
 
   def get_users_by_deadline(self, deadline: date) -> Optional[list[int]]:
     with self.conn.cursor() as cur:
-      cur.execute('SELECT user_id FROM user_deadlines WHERE deadline = %s', (deadline, ))
-      user_ids = cur.fetchall()
+      try:
+        cur.execute('SELECT user_id FROM user_deadlines WHERE deadline = %s', (deadline, ))
+        user_ids = cur.fetchall()
+      except Exception as e:
+        print(e)
+        user_ids = []
+
 
     user_ids = [i[0] for i in user_ids]
     return user_ids
@@ -106,7 +126,10 @@ class Handler:
 
   def delete_user(self, user_id: int) -> None:
     with self.conn.cursor() as cur:
-      cur.execute('DELETE FROM user_deadlines WHERE user_id = %s', (user_id, ))
-      self.conn.commit()
+      try:
+        cur.execute('DELETE FROM user_deadlines WHERE user_id = %s', (user_id, ))
+        self.conn.commit()
+      except Exception as e:
+        print(e)
 
 handler = Handler()

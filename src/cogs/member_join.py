@@ -109,6 +109,16 @@ class MemberJoin(commands.Cog):
       msg = f"{user.mention} さんの体験入部期間はあと 7日 で終了します。本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
       await welcome_channel.send(msg)
 
+  @check_deadline.error
+  async def check_deadline_error(ctx: commands.Context, error):
+    print(error)
+    print(ctx)
+
+  @check_near_deadline.error
+  async def check_near_deadline_error(ctx: commands.Context, error):
+    print(error)
+    print(ctx)
+
 async def setup(bot: commands.Bot):
   cog = MemberJoin(bot)
   await bot.add_cog(cog)
