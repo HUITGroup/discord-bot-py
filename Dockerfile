@@ -11,4 +11,4 @@ WORKDIR /work
 RUN mkdir -p log
 RUN pip install -r requirements.txt
 
-CMD ["python", "src/main.py"]
+CMD ["python", "-u", "src/main.py"]
