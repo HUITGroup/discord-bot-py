@@ -8,7 +8,7 @@ RUN pip install --upgrade pip
 COPY . /work
 WORKDIR /work
 
-RUN mkdir log
+RUN mkdir -p log
 RUN pip install -r requirements.txt
 
 CMD ["python", "src/main.py"]
