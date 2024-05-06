@@ -2,6 +2,7 @@ import os
 import time
 from pathlib import Path
 from typing import Optional
+from datetime import datetime as dt, date
 
 import psycopg2
 from dotenv import load_dotenv
@@ -43,11 +44,16 @@ class Handler:
       ");"
     )
 
-    with self.conn.cursor() as cur:
-      cur.execute(schema1)
+    schema3 = (
+      "CREATE TABLE IF NOT EXISTS user_deadlines (" \
+      "        user_id BIGINT CHECK(user_id >= 0) NOT NULL PRIMARY KEY," \
+      "        deadline DATE NOT NULL" \
+      ");"
+    )
 
-    with self.conn.cursor() as cur:
-      cur.execute(schema2)
+    for schema in [schema1, schema2, schema3]:
+      with self.conn.cursor() as cur:
+        cur.execute(schema)
 
   def get_timeline_channel_id(self, guild_id: int) -> Optional[int]:
     with self.conn.cursor() as cur:
@@ -81,3 +87,26 @@ class Handler:
     with self.conn.cursor() as cur:
       cur.execute('INSERT INTO timeline_message(timeline_message_id, original_message_id) VALUES(%s, %s)', (timeline_message_id, original_message_id))
       self.conn.commit()
+
+  def get_users_by_deadline(self, deadline: date) -> Optional[list[int]]:
+    with self.conn.cursor() as cur:
+      cur.execute('SELECT user_id FROM user_deadlines WHERE deadline = %s', (deadline, ))
+      user_ids = cur.fetchall()
+
+    user_ids = [i[0] for i in user_ids]
+    return user_ids
+
+  def register_user(self, user_id: int, deadline: date) -> None:
+    with self.conn.cursor() as cur:
+      try:
+        cur.execute('INSERT INTO user_deadlines(user_id, deadline) VALUES(%s, %s)', (user_id, deadline))
+        self.conn.commit()
+      except Exception as e:
+        print(e)
+
+  def delete_user(self, user_id: int) -> None:
+    with self.conn.cursor() as cur:
+      cur.execute('DELETE FROM user_deadlines WHERE user_id = %s', (user_id, ))
+      self.conn.commit()
+
+handler = Handler()

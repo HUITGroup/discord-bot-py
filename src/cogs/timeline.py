@@ -4,13 +4,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from .handler import Handler
+from .handler.handler import handler
 
 
 JST = tz(td(hours=9), 'JST')
 
 
-handler = Handler()
+# handler = Handler()
 
 class Timeline(commands.Cog):
   def __init__(self, bot: commands.Bot):
