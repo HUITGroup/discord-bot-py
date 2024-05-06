@@ -48,7 +48,7 @@ class Timeline(commands.Cog):
 
     embed.set_author(
       name=message.author.name,
-      icon_url=message.author.avatar.url
+      icon_url=message.author.avatar.url if message.author.avatar else None
     )
 
     footer = message.channel.name
