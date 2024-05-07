@@ -12,7 +12,7 @@ load_dotenv(ABS / '.env')
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-EXTENSIONS = ['cogs.member_year', 'cogs.timeline', 'cogs.member_join', 'cogs.help']
+EXTENSIONS = ['cogs.member_year', 'cogs.timeline', 'cogs.member_join', 'cogs.help', 'cogs.parrot']
 
 intents = discord.Intents.default()
 intents.message_content = True
