@@ -16,5 +16,10 @@ class Parrot(commands.Cog):
     parrot = discord.File(fp=str(ROOT / 'assets' / 'gif' / '60fpsparrot.gif'))
     await interaction.response.send_message(file=parrot)
 
+  @app_commands.command(name='ultrafastparrot', description='ultrafast parrot!')
+  async def parrot(self, interaction: discord.Interaction):
+    parrot = discord.File(fp=str(ROOT / 'assets' / 'gif' / 'ultrafastparrot.gif'))
+    await interaction.response.send_message(file=parrot)
+
 async def setup(bot: commands.Bot):
   await bot.add_cog(Parrot(bot))
