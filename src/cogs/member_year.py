@@ -7,6 +7,8 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from .utils.selection import Selection
+
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
@@ -16,34 +18,18 @@ BOT_ROLE_ID = int(os.getenv("BOT_ROLE_ID"))
 JST = tz(td(hours=9), 'JST')
 
 
-class Selection(discord.ui.View):
+class CreationView(Selection):
   def __init__(self, user: discord.Member, year: str):
-    super().__init__(timeout=None)
-    self.user = user
+    super().__init__(user)
     self.year = year
-
-  async def disable_buttons(self, interaction: discord.Interaction):
-    for button in self.children:
-      button.disabled = True
-
-    await interaction.response.edit_message(embed=None, view=self)
 
   @discord.ui.button(label="OK", style=discord.ButtonStyle.success)
   async def ok(self, interaction: discord.Interaction, button: discord.ui.Button):
-    if interaction.user != self.user:
-      return
+    await super().ok(interaction, button)
 
-    await self.disable_buttons(interaction)
     await interaction.channel.send("ロール作成を開始します...")
     await _create(interaction, self.year)
 
-  @discord.ui.button(label="Cancel", style=discord.ButtonStyle.gray)
-  async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
-    if interaction.user != self.user:
-      return
-
-    await self.disable_buttons(interaction)
-    await interaction.channel.send("キャンセルしました")
 
 async def _create(interaction: discord.Interaction, year: str):
   guild = interaction.guild
@@ -149,7 +135,7 @@ class MemberYear(commands.Cog):
     if f'member-{year}' in interaction.guild.roles:
       await interaction.response.send_message(f'`member-{year}` は既に存在します。再作成したい場合は、一度消してからコマンドを実行してください。')
     elif year != str(this_year):
-      selection = Selection(interaction.user, year)
+      selection = CreationView(interaction.user, year)
       await interaction.response.send_message(f'member-{year} は次年度用ではありません。作成しますか?', view=selection)
     else:
       await _create(interaction, year)
