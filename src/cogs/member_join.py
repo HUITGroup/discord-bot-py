@@ -95,6 +95,8 @@ class MemberJoin(commands.Cog):
 
   @tasks.loop(time=START)
   async def check_near_deadline(self):
+    print('deadline check 2 has started')
+
     deadline = (dt.now(JST) + td(days=7)).date()
     user_ids = handler.get_users_by_deadline(deadline)
     if not user_ids:
