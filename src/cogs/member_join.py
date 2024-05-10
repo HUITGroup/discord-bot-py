@@ -54,12 +54,13 @@ class MemberJoin(commands.Cog):
       role = await guild.create_role(name=role_name)
       await member.add_roles(role)
 
-    welcome_channel = guild.get_channel(INFO_CHANNEL_ID)
+    welcome_channel = guild.system_channel
+    info_channel = guild.get_channel(INFO_CHANNEL_ID)
 
     msg = (
       f"{member.mention} さん、HUITにようこそ！\n" \
       f"体験入部期間は {role_name} までとなります。\n" \
-      f"{welcome_channel.mention} を読んで、活動に楽しくご参加ください！"
+      f"{info_channel.mention} を読んで、活動に楽しくご参加ください！"
     )
     await member.guild.system_channel.send(msg)
 
