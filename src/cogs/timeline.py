@@ -61,8 +61,11 @@ class Timeline(commands.Cog):
   async def on_message(self, message: discord.Message):
     print("create event")
 
-    if message.author.id == self.bot.user.id:
-      return
+    # if message.author.id == self.bot.user.id:
+    #   return
+
+    # if message.content == "/timeline":
+    #   return
 
     channel = message.channel
     assert channel is not None
