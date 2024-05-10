@@ -64,9 +64,6 @@ class Timeline(commands.Cog):
     if message.author.id == self.bot.user.id:
       return
 
-    if message.content == "/timeline":
-      return
-
     channel = message.channel
     assert channel is not None
 

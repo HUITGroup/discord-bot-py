@@ -54,7 +54,7 @@ class MemberJoin(commands.Cog):
       role = await guild.create_role(name=role_name)
       await member.add_roles(role)
 
-    welcome_channel = guild.system_channel
+    welcome_channel = guild.get_channel(INFO_CHANNEL_ID)
 
     msg = (
       f"{member.mention} さん、HUITにようこそ！\n" \
