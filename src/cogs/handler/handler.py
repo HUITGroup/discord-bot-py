@@ -119,7 +119,7 @@ class Handler:
   def register_user(self, user_id: int, deadline: date) -> None:
     with self.conn.cursor() as cur:
       try:
-        cur.execute('INSERT INTO user_deadlines(user_id, deadline) VALUES(%s, %s)', (user_id, deadline))
+        cur.execute('INSERT INTO user_deadlines(user_id, deadline) VALUES(%s, %s) ON CONFLICT (user_id) DO NOTHING', (user_id, deadline))
         self.conn.commit()
       except Exception as e:
         print(e)
