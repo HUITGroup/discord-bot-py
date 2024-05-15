@@ -121,6 +121,13 @@ async def _create(interaction: discord.Interaction, year: str):
     print(f'{channel.name} での権限を設定しました')
     await interaction.channel.send(f'{channel.name} での権限を設定しました')
 
+  prev_role = discord.utils.get(guild.roles, name=f'member-{int(year)-1}')
+  for channel in guild.channels:
+    if channel.permissions_for(prev_role).view_channel and not channel.permissions_for(role).view_channel:
+      await channel.set_permissions(role, overwrite=permissions)
+      print(f'{channel.name} での権限を設定しました')
+      await interaction.channel.send(f'{channel.name} での権限を設定しました')
+
   await interaction.channel.send(f'正常終了')
 
 class MemberYear(commands.Cog):
