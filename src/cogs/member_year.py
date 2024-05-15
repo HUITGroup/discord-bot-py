@@ -27,7 +27,7 @@ class CreationView(Selection):
   async def ok(self, interaction: discord.Interaction, button: discord.ui.Button):
     await super().ok(interaction, button)
 
-    await interaction.channel.send("ロール作成を開始します...")
+    await interaction.channel.send("ロール作成を開始します...",)
     await _create(interaction, self.year)
 
 
@@ -133,11 +133,12 @@ class MemberYear(commands.Cog):
     this_year = int(dt.now(JST).year)
 
     if f'member-{year}' in interaction.guild.roles:
-      await interaction.response.send_message(f'`member-{year}` は既に存在します。再作成したい場合は、一度消してからコマンドを実行してください。')
+      await interaction.response.send_message(f'`member-{year}` は既に存在します。再作成したい場合は、一度消してからコマンドを実行してください。', ephemeral=True)
     elif year != str(this_year):
       selection = CreationView(interaction.user, year)
-      await interaction.response.send_message(f'member-{year} は次年度用ではありません。作成しますか?', view=selection)
+      await interaction.response.send_message(f'member-{year} は次年度用ではありません。作成しますか?', view=selection, ephemeral=True)
     else:
+      await interaction.response.send_message('続行します...', ephemeral=True)
       await _create(interaction, year)
 
   @app_commands.command(name="schedule_delete", description='member-{year} ロールを指定年月日 0:00 に削除します。過去の年月日を指定した場合警告が出ますが、強制的に実行すると即時削除されます。')
