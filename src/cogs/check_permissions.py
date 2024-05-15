@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
 
-GUILD_ID = os.getenv('GUILD_ID')
+GUILD_ID = int(os.getenv('GUILD_ID'))
 
 class CheckPermissions(commands.Cog):
   def __init__(self, bot: commands.Bot):
