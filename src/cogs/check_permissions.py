@@ -16,7 +16,7 @@ class CheckPermissions(commands.Cog):
   def __init__(self, bot: commands.Bot):
     self.bot = bot
 
-  @app_commands.command(name='check_permissions')
+  @app_commands.command(name='check_permissions', description='指定ロールでアクセス**できない**チャンネル一覧を表示します')
   @app_commands.checks.has_permissions(administrator=True)
   async def check_permissions(self, interaction: discord.Interaction, role_name: str):
     await interaction.response.send_message("start")
