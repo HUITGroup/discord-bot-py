@@ -21,7 +21,7 @@ class Timeline(commands.Cog):
     if self.bot.user.id == interaction.user.id:
       return
 
-    crud.register_timeline_channel(interaction.guild_id, interaction.channel_id)
+    await crud.register_timeline_channel(interaction.guild_id, interaction.channel_id)
     await interaction.response.send_message('このチャンネルを新しくtimelineチャンネルとして登録しました')
 
   @app_commands.command(name='check_id')
