@@ -1,12 +1,12 @@
 import os
 import time
+from datetime import date
+from datetime import datetime as dt
 from pathlib import Path
 from typing import Optional
-from datetime import datetime as dt, date
 
 import psycopg2
 from dotenv import load_dotenv
-
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
@@ -55,7 +55,7 @@ class Handler:
       with self.conn.cursor() as cur:
         cur.execute(schema)
 
-  def get_timeline_channel_id(self, guild_id: int) -> Optional[int]:
+  def get_timeline_channel_id(self, guild_id: int) -> int | None:
     with self.conn.cursor() as cur:
       try:
         cur.execute('SELECT timeline_id FROM timeline_channel WHERE guild_id = %s', (guild_id, ))
@@ -67,7 +67,7 @@ class Handler:
     timeline_channel_id = timeline_channel_id[0] if timeline_channel_id else None
     return timeline_channel_id
 
-  def get_timeline_message_id(self, original_message_id: int) -> Optional[int]:
+  def get_timeline_message_id(self, original_message_id: int) -> int | None:
     with self.conn.cursor() as cur:
       try:
         cur.execute('SELECT timeline_message_id FROM timeline_message WHERE original_message_id = %s', (original_message_id, ))
@@ -103,7 +103,7 @@ class Handler:
       except Exception as e:
         print(e)
 
-  def get_users_by_deadline(self, deadline: date) -> Optional[list[int]]:
+  def get_users_by_deadline(self, deadline: date) -> list[int] | None:
     with self.conn.cursor() as cur:
       try:
         cur.execute('SELECT user_id FROM user_deadlines WHERE deadline = %s', (deadline, ))

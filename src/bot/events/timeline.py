@@ -1,16 +1,15 @@
-from datetime import datetime as dt, timedelta as td, timezone as tz
+from datetime import datetime as dt
+from datetime import timedelta as td
+from datetime import timezone as tz
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from .handler.handler import handler
-
+import src.db.crud as crud
 
 JST = tz(td(hours=9), 'JST')
 
-
-# handler = Handler()
 
 class Timeline(commands.Cog):
   def __init__(self, bot: commands.Bot):
@@ -22,7 +21,7 @@ class Timeline(commands.Cog):
     if self.bot.user.id == interaction.user.id:
       return
 
-    handler.register_timeline_channel(interaction.guild_id, interaction.channel_id)
+    crud.register_timeline_channel(interaction.guild_id, interaction.channel_id)
     await interaction.response.send_message('このチャンネルを新しくtimelineチャンネルとして登録しました')
 
   @app_commands.command(name='check_id')
@@ -73,7 +72,7 @@ class Timeline(commands.Cog):
     if not channel.name.startswith("times_"):
       return
 
-    timeline_channel_id = handler.get_timeline_channel_id(message.guild.id)
+    timeline_channel_id = await crud.get_timeline_channel_id(message.guild.id)
 
     if timeline_channel_id is None:
       return
@@ -83,7 +82,7 @@ class Timeline(commands.Cog):
     timeline_channel = self.bot.get_channel(timeline_channel_id)
     timeline_message = await timeline_channel.send(content=message.jump_url, embed=embed)
 
-    handler.register_message(timeline_message.id, message.id)
+    await crud.register_message(timeline_message.id, message.id)
 
     print('create event completed')
 
@@ -91,7 +90,7 @@ class Timeline(commands.Cog):
   async def on_message_edit(self, before: discord.Message, after: discord.Message):
     print('update event')
 
-    timeline_message_id = handler.get_timeline_message_id(before.id)
+    timeline_message_id = await crud.get_timeline_message_id(before.id)
     if not timeline_message_id:
       return
 
@@ -99,7 +98,7 @@ class Timeline(commands.Cog):
     if not message_channel:
       return
 
-    timeline_channel_id = handler.get_timeline_channel_id(after.guild.id)
+    timeline_channel_id = await crud.get_timeline_channel_id(after.guild.id)
 
     embed = self._create_embed(after)
 
@@ -113,11 +112,11 @@ class Timeline(commands.Cog):
   async def on_message_delete(self, message: discord.Message):
     print('delete event')
 
-    timeline_message_id = handler.get_timeline_message_id(message.id)
+    timeline_message_id = await crud.get_timeline_message_id(message.id)
     if not timeline_message_id:
       return
 
-    timeline_channel_id = handler.get_timeline_channel_id(message.guild.id)
+    timeline_channel_id = await crud.get_timeline_channel_id(message.guild.id)
     if not timeline_channel_id:
       return
 
@@ -125,7 +124,7 @@ class Timeline(commands.Cog):
     timeline_message = await timeline_channel.fetch_message(timeline_message_id)
     await timeline_message.delete()
 
-    handler.del_timeline(message.id)
+    await crud.del_timeline(message.id)
 
     print('delete event completed')
 

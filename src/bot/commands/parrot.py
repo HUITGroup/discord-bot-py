@@ -1,11 +1,20 @@
+"""party parrotコマンド関連"""
+
+import os
 from pathlib import Path
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+from dotenv import load_dotenv
 
+ROOT = Path(__file__).resolve().parents[3]
+ABS = Path(__file__).resolve().parents[3]
+load_dotenv(ABS / '.env')
 
-ROOT = Path(__file__).resolve().parents[2]
+GUEST_ROLE_ID = int(os.getenv('GUEST_ROLE_ID'))
+GUILD_ID = int(os.getenv('GUILD_ID'))
+MY_ID = 521879689447473152
 
 class Parrot(commands.Cog):
   def __init__(self, bot: commands.Bot):
@@ -17,7 +26,7 @@ class Parrot(commands.Cog):
     await interaction.response.send_message(file=parrot)
 
   @app_commands.command(name='ultrafastparrot', description='ultrafast parrot!')
-  async def parrot(self, interaction: discord.Interaction):
+  async def ultrafastparrot(self, interaction: discord.Interaction):
     parrot = discord.File(fp=str(ROOT / 'assets' / 'gif' / 'ultrafastparrot.gif'))
     await interaction.response.send_message(file=parrot)
 
