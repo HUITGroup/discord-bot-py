@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from src.api.routers.router import router
 from src.bot import bot
+from src.db.database import init_models
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'log'
@@ -21,11 +22,15 @@ load_dotenv(ABS / '.env')
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 log_handler = logging.FileHandler(filename=LOG / 'discord.log', encoding='utf-8', mode='w')
-
+log_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+logger.addHandler(log_handler)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-  asyncio.create_task(bot.run(TOKEN, log_handler=log_handler))
+  await init_models()
+  asyncio.create_task(bot.start(TOKEN))
   yield
 
 app = FastAPI(lifespan=lifespan)

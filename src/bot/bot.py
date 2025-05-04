@@ -7,10 +7,11 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-ABS = Path(__file__).resolve().parent
+ABS = Path(__file__).resolve().parents[1]
 load_dotenv(ABS / ".env")
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+GUILD_ID = int(os.getenv("GUILD_ID"))
 
 EXTENSIONS = [
   # "src..member_year",
@@ -22,7 +23,8 @@ EXTENSIONS = [
   'src.bot.commands.help',
   'src.bot.commands.parrot',
   'src.bot.events.member_join',
-  'src.bot.events.timeline'
+  'src.bot.events.timeline',
+  'src.tests.bot.commands.check_role'
 ]
 
 intents = discord.Intents.default()
@@ -38,6 +40,7 @@ async def on_ready():  # noqa: D103
   for cog in EXTENSIONS:
     await bot.load_extension(cog)
 
-  await bot.tree.sync()
+  synced = await bot.tree.sync()
+  print(synced)
 
   print(f"Logged in as {bot.user.name}")

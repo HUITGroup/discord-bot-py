@@ -17,15 +17,16 @@ class TimelineMessage(Base):
 
 class UserData(Base):
   __tablename__ = "user_data"
-  username = Column(String, primary_key=True)
+  username = Column(String(256), primary_key=True)
   user_id = Column(BigInteger, nullable=False)
-  nickname = Column(String, nullable=False)
+  nickname = Column(String(256), nullable=False)
   grade = Column(
-    String,
+    String(5),
     CheckConstraint(
-      "grade IN ('b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd1', 'd2', 'd3', 'd', 'other')",
+      "grade IN ('b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd1', 'd2', 'd3', 'other')",
       name="grade_check"
     ),
     nullable=False
   )
+  channel_id = Column(BigInteger)
   deadline = Column(Date)

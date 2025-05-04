@@ -1,12 +1,20 @@
 """party parrotコマンド関連"""
 
+import os
 from pathlib import Path
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+from dotenv import load_dotenv
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
+ABS = Path(__file__).resolve().parents[3]
+load_dotenv(ABS / '.env')
+
+GUEST_ROLE_ID = int(os.getenv('GUEST_ROLE_ID'))
+GUILD_ID = int(os.getenv('GUILD_ID'))
+MY_ID = 521879689447473152
 
 class Parrot(commands.Cog):
   def __init__(self, bot: commands.Bot):

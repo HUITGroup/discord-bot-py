@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from .utils.selection import Selection
 
 
-ABS = Path(__file__).resolve().parents[1]
+ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
 
 BOT_ROLE_ID = int(os.getenv("BOT_ROLE_ID"))

@@ -11,20 +11,24 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import declarative_base
 
-ABS = Path(__file__).resolve().parents[1]
+ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / ".env")
 
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_DATABASE = os.getenv("POSTGRES_DATABASE")
-POSTGRES_ADDRESS = os.getenv("POSTGRES_ADDRESS")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+MYSQL_USER = os.getenv("MYSQL_USER")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
+MYSQL_ADDRESS = os.getenv("MYSQL_ADDRESS")
+MYSQL_PORT = os.getenv("MYSQL_PORT")
 
 DATABASE_URL = (
-  f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-  f"@{POSTGRES_ADDRESS}:{POSTGRES_PORT}/{POSTGRES_DATABASE}"
+  f"mysql+asyncmy://{MYSQL_USER}:{MYSQL_PASSWORD}"
+  f"@{MYSQL_ADDRESS}:{MYSQL_PORT}/{MYSQL_DATABASE}"
 )
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 Base = declarative_base()
+
+async def init_models() -> None:
+  async with engine.begin() as conn:
+    await conn.run_sync(Base.metadata.create_all)

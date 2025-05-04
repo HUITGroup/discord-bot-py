@@ -1,14 +1,14 @@
 import os
 import time
+from datetime import date
+from datetime import datetime as dt
 from pathlib import Path
 from typing import Optional
-from datetime import datetime as dt, date
 
 import psycopg2
 from dotenv import load_dotenv
 
-
-ABS = Path(__file__).resolve().parents[1]
+ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
 
 POSTGRES_ROOT_PASSWORD = os.getenv("POSTGRES_ROOT_PASSWORD")

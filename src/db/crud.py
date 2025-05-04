@@ -3,8 +3,10 @@
 from datetime import date
 from typing import Literal
 
+import pandas as pd
+import sqlalchemy
 from sqlalchemy import delete, insert
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound, SQLAlchemyError
 from sqlalchemy.future import select
 
 from src.db.database import async_session
@@ -16,6 +18,7 @@ async def get_timeline_channel_id(guild_id: int):
     result = await session.execute(
       select(TimelineChannel).where(TimelineChannel.guild_id == guild_id)
     )
+    await session.commit()
     channel = result.scalar_one_or_none()
     return channel.timeline_id if channel else None
 
@@ -27,6 +30,7 @@ async def get_timeline_message_id(original_message_id: int):
         TimelineMessage.original_message_id == original_message_id
       )
     )
+    await session.commit()
     message = result.scalar_one_or_none()
     return message.timeline_message_id if message else None
 
@@ -61,13 +65,37 @@ async def register_message(timeline_message_id: int, original_message_id: int):
     )
     await session.commit()
 
-
-async def get_users_by_deadline(deadline: date):
+async def get_user_by_username(user_name: str) -> UserData:
   async with async_session() as session:
-    result = await session.execute(
-      select(UserData.user_id).where(UserData.deadline == deadline)
-    )
-    return [r[0] for r in result.all()]
+    try:
+      result = await session.get(UserData, user_name)
+      await session.commit()
+      return result
+    except SQLAlchemyError as e:
+      print(e)
+      return 'error'
+
+async def get_users_by_deadline(deadline: date) -> list[UserData]:
+  async with async_session() as session:
+    try:
+      result = await session.execute(
+        select(UserData).where(UserData.deadline == deadline)
+      )
+      await session.commit()
+      return result.scalars().all()
+    except SQLAlchemyError as e:
+      print(e)
+      return []
+
+async def get_all_users() -> list[UserData]:
+  async with async_session() as session:
+    try:
+      result = await session.execute(select(UserData))
+      await session.commit()
+      return result.scalars().all()
+    except SQLAlchemyError as e:
+      print(e)
+      return []
 
 async def pre_register_user(username: str, nickname: str, grade: Literal['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd1', 'd2', 'd3', 'd', 'other']):
   async with async_session() as session:
@@ -87,12 +115,19 @@ async def pre_register_user(username: str, nickname: str, grade: Literal['b1', '
       print(e)
       return False
 
-async def register_user(user_id: int, deadline: date):
+async def register_user(username: str, user_id: int, channel_id: int, deadline: date):
   async with async_session() as session:
-    exists = await session.get(UserData, user_id)
-    if not exists:
-      session.add(UserData(user_id=user_id, deadline=deadline))
-      await session.commit()
+    try:
+      user = await session.get(UserData, username)
+      print(user)
+      if user:
+        user.user_id = user_id
+        user.channel_id = channel_id
+        user.deadline = deadline
+        await session.commit()
+    except SQLAlchemyError as e:
+      session.rollback()
+      print(e)
 
 
 async def delete_user(user_id: int):
@@ -100,4 +135,10 @@ async def delete_user(user_id: int):
     await session.execute(
       delete(UserData).where(UserData.user_id == user_id)
     )
+    await session.commit()
+
+async def csv_to_sql(df: pd.DataFrame):
+  async with async_session() as session:
+    objs = [UserData(**row) for row in df.to_dict(orient='records')]
+    session.add_all(objs)
     await session.commit()
