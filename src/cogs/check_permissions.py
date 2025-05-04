@@ -7,7 +7,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 
-ABS = Path(__file__).resolve().parents[2]
+ABS = Path(__file__).resolve().parents[1]
 load_dotenv(ABS / '.env')
 
 GUILD_ID = int(os.getenv('GUILD_ID'))

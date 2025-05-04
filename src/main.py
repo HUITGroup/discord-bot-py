@@ -1,36 +1,45 @@
-import os
+import asyncio
 import logging
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-import discord
-from discord.ext import commands
 from dotenv import load_dotenv
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from src.api.routers.router import router
+from src.bot import bot
 
 ABS = Path(__file__).resolve().parents[1]
+LOG = ABS / 'log'
+LOG.mkdir(exist_ok=True)
 load_dotenv(ABS / '.env')
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-EXTENSIONS = ['cogs.member_year', 'cogs.timeline', 'cogs.member_join', 'cogs.help', 'cogs.parrot', 'cogs.check_permissions']
+log_handler = logging.FileHandler(filename=LOG / 'discord.log', encoding='utf-8', mode='w')
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
 
-activity = discord.Activity(name="/help", type=discord.ActivityType.playing)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  asyncio.create_task(bot.run(TOKEN, log_handler=log_handler))
+  yield
 
-bot = commands.Bot('some_prefix', intents=intents, activity=activity)
+app = FastAPI(lifespan=lifespan)
 
-@bot.event
-async def on_ready():
-  for cog in EXTENSIONS:
-    await bot.load_extension(cog)
+app.include_router(router)
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=['*'],
+  allow_credentials=True,
+  allow_methods=['*'],
+  allow_headers=['*']
+)
 
-  await bot.tree.sync()
-
-  print(f'Logged in as {bot.user.name}')
-
-handler = logging.FileHandler(filename=ABS / 'log' / 'discord.log', encoding='utf-8', mode='w')
-
-bot.run(TOKEN, log_handler=handler)
+@app.exception_handler(RequestValidationError)
+async def handler(request: Request, exc: RequestValidationError):
+  print(exc)
+  return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)

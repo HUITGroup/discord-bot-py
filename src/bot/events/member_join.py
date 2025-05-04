@@ -1,13 +1,15 @@
 import os
+from datetime import datetime as dt
+from datetime import time
+from datetime import timedelta as td
+from datetime import timezone as tz
 from pathlib import Path
-from datetime import timedelta as td, timezone as tz, datetime as dt, time
 
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
-from .handler.handler import handler
-
+import src.db.crud as crud
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
@@ -19,9 +21,7 @@ GUILD_ID = int(os.getenv('GUILD_ID'))
 JST = tz(td(hours=9), 'JST')
 
 START = time(hour=14, tzinfo=JST)
-# now = dt.now(JST) + td(seconds=15)
-# print(now.tzinfo)
-# START = time(hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond, tzinfo=JST)
+
 print(START.tzinfo)
 print(START)
 
@@ -64,18 +64,18 @@ class MemberJoin(commands.Cog):
     )
     await member.guild.system_channel.send(msg)
 
-    handler.register_user(member.id, raw_limit_day)
+    crud.register_user(member.id, raw_limit_day)
 
   @commands.Cog.listener()
   async def on_member_leave(self, member: discord.Member):
-    handler.delete_user(member.id)
+    crud.delete_user(member.id)
 
   @tasks.loop(time=START)
   async def check_deadline(self):
     print('deadline check has started')
 
     today = dt.now(JST).date()
-    user_ids = handler.get_users_by_deadline(today)
+    user_ids = crud.get_users_by_deadline(today)
 
     if not user_ids:
       return
@@ -98,7 +98,7 @@ class MemberJoin(commands.Cog):
     print('deadline check 2 has started')
 
     deadline = (dt.now(JST) + td(days=7)).date()
-    user_ids = handler.get_users_by_deadline(deadline)
+    user_ids = crud.get_users_by_deadline(deadline)
     if not user_ids:
       return
 

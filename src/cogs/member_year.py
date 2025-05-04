@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from .utils.selection import Selection
 
 
-ABS = Path(__file__).resolve().parents[2]
+ABS = Path(__file__).resolve().parents[1]
 load_dotenv(ABS / '.env')
 
 BOT_ROLE_ID = int(os.getenv("BOT_ROLE_ID"))
@@ -75,7 +75,7 @@ async def _create(interaction: discord.Interaction, year: str):
   print(f'member-{year} を作成しました')
   await interaction.channel.send(f'member-{year} を作成しました')
 
-  private_categories = set([
+  private_categories = {
     "🗒 Text Channels",
     "📣 VOICE CHANNELS",
     "🎈 EVENTS",
@@ -94,12 +94,12 @@ async def _create(interaction: discord.Interaction, year: str):
     "🗝 Archived",
     "TIMES ARCHIVED",
     "TIMES_ARCHIVED_2"
-  ])
-  private_channels = set([
+  }
+  private_channels = {
     'cat-gpt',
     'timeline',
     'moderator'
-  ])
+  }
   permissions = discord.PermissionOverwrite(
     view_channel=True,
     connect=True,
@@ -128,7 +128,7 @@ async def _create(interaction: discord.Interaction, year: str):
       print(f'{channel.name} での権限を設定しました')
       await interaction.channel.send(f'{channel.name} での権限を設定しました')
 
-  await interaction.channel.send(f'正常終了')
+  await interaction.channel.send('正常終了')
 
 class MemberYear(commands.Cog):
   def __init__(self, bot):
