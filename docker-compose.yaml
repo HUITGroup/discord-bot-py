@@ -10,10 +10,16 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-u", "huit_dc", "-p${MYSQL_PASSWORD}"]
+      interval: 5s
+      retries: 10
+      start_period: 10s
 
   huit-bot:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build:
       context: .
       dockerfile: Dockerfile
