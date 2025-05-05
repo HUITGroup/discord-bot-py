@@ -100,14 +100,18 @@ async def get_all_users() -> list[UserData]:
 async def pre_register_user(username: str, nickname: str, grade: Literal['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other']):
   async with async_session() as session:
     try:
-      session.add(
-        UserData(
-          username=username,
-          user_id=-1,
-          nickname=nickname,
-          grade=grade
+      user = await session.get(UserData, username)
+      if user:
+        user.grade = grade
+      else:
+        session.add(
+          UserData(
+            username=username,
+            user_id=-1,
+            nickname=nickname,
+            grade=grade
+          )
         )
-      )
       await session.commit()
       return True
     except SQLAlchemyError as e:
