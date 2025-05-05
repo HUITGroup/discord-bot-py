@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.post(path='/pre_register')
 async def pre_register(req: RegisterRequest):
-  res = pre_register_user(req.username, req.nickname, req.grade)
+  res = await pre_register_user(req.username, req.nickname, req.grade)
   if res:
     return JSONResponse(content={})
   else:
