@@ -23,7 +23,7 @@ class UserData(Base):
   grade = Column(
     String(5),
     CheckConstraint(
-      "grade IN ('b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd1', 'd2', 'd3', 'other')",
+      "grade IN ('b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other')",
       name="grade_check"
     ),
     nullable=False
