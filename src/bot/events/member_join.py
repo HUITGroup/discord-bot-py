@@ -70,15 +70,29 @@ class MemberJoin(commands.Cog):
     await member.guild.system_channel.send(msg)
 
     user = await crud.get_user_by_username(member.name)
+
+    if user.grade in {'m1', 'm2', 'd'}:
+      category_name = 'TIMES M/D'
+    elif user.grade == 'other':
+      category_name = 'TIMES other'
+    else:
+      category_name = f'TIMES {user.grade.upper()}'
+
     if user is None:
       ...
     elif user.channel_id is None:
-      channel = await guild.create_text_channel(f'times_{user.nickname}', category=discord.utils.get(guild.categories, name=f'TIMES {user.grade.upper()}'))
+
+      channel = await guild.create_text_channel(
+        f'times_{user.nickname}',
+        category=discord.utils.get(guild.categories, name=category_name)
+      )
       message = welcome_channel.get_partial_message(TIMES_MESSAGE_ID)
-      await channel.send(f'{member.mention}\ntimesを作成しました！\ntimesについての詳細はこちら→{message.jump_url}')
+      await channel.send(
+        f'{member.mention}\ntimesを作成しました！\ntimesについての詳細はこちら→{message.jump_url}'
+      )
       await crud.register_user(member.name, member.id, channel.id, raw_limit_day)
     else:
-      category = discord.utils.get(guild.categories, name=f'TIMES {user.grade.upper()}')
+      category = discord.utils.get(guild.categories, name=category_name)
       channel = guild.get_channel(user.channel_id)
       await channel.edit(category=category)
 
