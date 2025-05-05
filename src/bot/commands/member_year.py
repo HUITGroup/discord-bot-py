@@ -90,6 +90,7 @@ async def _create(interaction: discord.Interaction, year: str):
     name=f'member-{year}',
     permissions=permissions,
     mentionable=True,
+    color=0x3498DB
   )
 
   await role.edit(position=me.position-1)
