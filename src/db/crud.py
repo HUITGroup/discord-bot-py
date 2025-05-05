@@ -97,7 +97,7 @@ async def get_all_users() -> list[UserData]:
       print(e)
       return []
 
-async def pre_register_user(username: str, nickname: str, grade: Literal['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd1', 'd2', 'd3', 'd', 'other']):
+async def pre_register_user(username: str, nickname: str, grade: Literal['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other']):
   async with async_session() as session:
     try:
       session.add(
