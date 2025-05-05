@@ -1,14 +1,13 @@
 import os
+from datetime import datetime as dt
+from datetime import timedelta as td
+from datetime import timezone as tz
 from pathlib import Path
-from datetime import datetime as dt, timedelta as td, timezone as tz
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-
-from .utils.selection import Selection
-
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
@@ -17,6 +16,31 @@ BOT_ROLE_ID = int(os.getenv("BOT_ROLE_ID"))
 
 JST = tz(td(hours=9), 'JST')
 
+class Selection(discord.ui.View):
+  def __init__(self, user: discord.Member):
+    super().__init__(timeout=None)
+    self.user = user
+
+  async def disable_buttons(self, interaction: discord.Interaction):
+    for button in self.children:
+      button.disabled = True
+
+    await interaction.response.edit_message(embed=None, view=self)
+
+  @discord.ui.button(label="OK", style=discord.ButtonStyle.success)
+  async def ok(self, interaction: discord.Interaction, button: discord.ui.Button):
+    if interaction.user != self.user:
+      return
+
+    await self.disable_buttons(interaction)
+
+  @discord.ui.button(label="Cancel", style=discord.ButtonStyle.gray)
+  async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+    if interaction.user != self.user:
+      return
+
+    await self.disable_buttons(interaction)
+    await interaction.channel.send("キャンセルしました")
 
 class CreationView(Selection):
   def __init__(self, user: discord.Member, year: str):
@@ -86,8 +110,9 @@ async def _create(interaction: discord.Interaction, year: str):
     "TIMES B2",
     "TIMES B3",
     "TIMES B4",
-    "TIMES B4_temp",
-    "times B5",
+    "TIMES AFTER B4",
+    "TIMES B5",
+    "TIMES B6",
     "TIMES M/D",
     "TIMES other",
     "情エレ過去問",
@@ -148,10 +173,10 @@ class MemberYear(commands.Cog):
       await interaction.response.send_message('続行します...', ephemeral=True)
       await _create(interaction, year)
 
-  @app_commands.command(name="schedule_delete", description='member-{year} ロールを指定年月日 0:00 に削除します。過去の年月日を指定した場合警告が出ますが、強制的に実行すると即時削除されます。')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def schedule_delete(self, interaction: discord.Interaction, member_year: str, yyyy: str, mm: str, dd: str):
-    ...
+  # @app_commands.command(name="schedule_delete", description='member-{year} ロールを指定年月日 0:00 に削除します。過去の年月日を指定した場合警告が出ますが、強制的に実行すると即時削除されます。')
+  # @app_commands.checks.has_permissions(administrator=True)
+  # async def schedule_delete(self, interaction: discord.Interaction, member_year: str, yyyy: str, mm: str, dd: str):
+  #   ...
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(MemberYear(bot))
