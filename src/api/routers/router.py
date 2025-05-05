@@ -7,7 +7,7 @@ from fastapi.routing import APIRouter
 from src.api.schemas.schema import RegisterRequest
 from src.db.crud import pre_register_user
 
-router = APIRouter(prefix='/api')
+router = APIRouter()
 
 @router.post(path='/pre_register')
 async def pre_register(req: RegisterRequest):
