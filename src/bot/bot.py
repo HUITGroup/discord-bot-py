@@ -22,6 +22,7 @@ EXTENSIONS = [
   # "cogs.check_permissions",
   'src.bot.commands.help',
   'src.bot.commands.parrot',
+  'src.bot.commands.member_year',
   'src.bot.events.member_join',
   'src.bot.events.timeline',
   'src.tests.bot.commands.check_role'
