@@ -16,4 +16,4 @@ COPY . /work
 WORKDIR /work
 
 RUN uv sync
-CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "src/main.py"]
