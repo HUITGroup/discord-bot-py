@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import src.db.crud as crud
+import db.crud as crud
 
 JST = tz(td(hours=9), 'JST')
 

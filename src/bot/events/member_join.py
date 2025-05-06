@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
-import src.db.crud as crud
+import db.crud as crud
 
 ABS = Path(__file__).resolve().parents[3]
 load_dotenv(ABS / '.env')

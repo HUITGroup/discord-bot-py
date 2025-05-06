@@ -1,18 +1,13 @@
 import asyncio
 import logging
 import os
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
-from src.api.routers.router import router
-from src.bot import bot
-from src.db.database import init_models
+from api import start_web_server
+from bot import bot
+from db.database import init_models
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'log'
@@ -27,24 +22,11 @@ logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 logger.addHandler(log_handler)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+async def main():
   await init_models()
-  asyncio.create_task(bot.start(TOKEN))
-  yield
+  await start_web_server()
+  await bot.start(TOKEN)
 
-app = FastAPI(lifespan=lifespan)
+if __name__ == '__main__':
+  asyncio.run(main())
 
-app.include_router(router)
-app.add_middleware(
-  CORSMiddleware,
-  allow_origins=['*'],
-  allow_credentials=True,
-  allow_methods=['*'],
-  allow_headers=['*']
-)
-
-@app.exception_handler(RequestValidationError)
-async def handler(request: Request, exc: RequestValidationError):
-  print(exc)
-  return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)

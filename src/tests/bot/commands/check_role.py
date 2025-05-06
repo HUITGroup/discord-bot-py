@@ -10,7 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from src.db import crud
+from db import crud
 
 JST = tz(td(hours=9), 'JST')
 

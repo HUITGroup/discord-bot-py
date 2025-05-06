@@ -1,11 +1,14 @@
-from pathlib import Path
-
-import pandas as pd
-
-ABS = Path(__file__).resolve().parents[2]
-
-df = pd.read_csv(ABS / 'map.csv')
+import requests
 
 
-a = 'a1'.upper()
-print(a)
+res = requests.post('http://0.0.0.0:8000/webhook/pre_register',
+  json={
+    "username": "sub8152",
+    "nickname": "misaizu_valid",
+    "grade": "b4",
+  },
+  headers={
+    "Content-Type": "application/json"
+  }
+)
+print(res.status_code)

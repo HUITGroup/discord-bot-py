@@ -9,8 +9,8 @@ from sqlalchemy import delete, insert
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound, SQLAlchemyError
 from sqlalchemy.future import select
 
-from src.db.database import async_session
-from src.db.models import TimelineChannel, TimelineMessage, UserData
+from db.database import async_session
+from db.models import TimelineChannel, TimelineMessage, UserData
 
 
 async def get_timeline_channel_id(guild_id: int):

@@ -1,11 +1,14 @@
 """botインスタンス定義部分"""
 
+import asyncio
 import os
 from pathlib import Path
 
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+
+from api import start_web_server
 
 ABS = Path(__file__).resolve().parents[1]
 load_dotenv(ABS / ".env")
@@ -20,12 +23,12 @@ EXTENSIONS = [
   # "cogs.help",
   # "cogs.parrot",
   # "cogs.check_permissions",
-  'src.bot.commands.help',
-  'src.bot.commands.parrot',
-  'src.bot.commands.member_year',
-  'src.bot.events.member_join',
-  'src.bot.events.timeline',
-  'src.tests.bot.commands.check_role'
+  'bot.commands.help',
+  'bot.commands.parrot',
+  'bot.commands.member_year',
+  'bot.events.member_join',
+  'bot.events.timeline',
+  'tests.bot.commands.check_role'
 ]
 
 intents = discord.Intents.default()
