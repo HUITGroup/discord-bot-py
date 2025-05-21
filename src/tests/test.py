@@ -1,14 +1,16 @@
-import requests
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 
-res = requests.post('http://0.0.0.0:8000/webhook/pre_register',
-  json={
-    "username": "sub8152",
-    "nickname": "misaizu_valid",
-    "grade": "b4",
-  },
-  headers={
-    "Content-Type": "application/json"
-  }
-)
-print(res.status_code)
+scope = ['https://spreadsheets.google.com.feeds', 'https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_name('./huit-bot-105deb6489c9.json')
+
+client = gspread.authorize(creds)
+
+spreadsheet = client.open('2025年度 北大 IT 研究会 入会フォーム（回答）')
+
+worksheet = spreadsheet.sheet1
+d = worksheet.get_all_records()
+
+for l in d:
+  print(l)

@@ -6,3 +6,6 @@ class RegisterRequest(BaseModel):
   grade: str
   username: str
   nickname: str
+
+class GrantRoleRequest(BaseModel):
+  username: str

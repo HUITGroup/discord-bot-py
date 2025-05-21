@@ -22,11 +22,21 @@ logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 logger.addHandler(log_handler)
 
+EXTENSIONS = [
+  'bot.commands.help',
+  'bot.commands.parrot',
+  'bot.commands.member_year',
+  'bot.events.member_join',
+  'bot.events.timeline',
+  'tests.bot.commands.check_role'
+]
+
 async def main():
   await init_models()
+  for cog in EXTENSIONS:
+    await bot.load_extension(cog)
   await start_web_server()
   await bot.start(TOKEN)
 
 if __name__ == '__main__':
   asyncio.run(main())
-

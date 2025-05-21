@@ -4,9 +4,8 @@ from datetime import date
 from typing import Literal
 
 import pandas as pd
-import sqlalchemy
-from sqlalchemy import delete, insert
-from sqlalchemy.exc import MultipleResultsFound, NoResultFound, SQLAlchemyError
+from sqlalchemy import delete
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
 from db.database import async_session
@@ -65,7 +64,7 @@ async def register_message(timeline_message_id: int, original_message_id: int):
     )
     await session.commit()
 
-async def get_user_by_username(user_name: str) -> UserData:
+async def get_user_by_username(user_name: str) -> UserData|None:
   async with async_session() as session:
     try:
       result = await session.get(UserData, user_name)
@@ -73,7 +72,7 @@ async def get_user_by_username(user_name: str) -> UserData:
       return result
     except SQLAlchemyError as e:
       print(e)
-      return 'error'
+      return None
 
 async def get_users_by_deadline(deadline: date) -> list[UserData]:
   async with async_session() as session:
@@ -82,7 +81,7 @@ async def get_users_by_deadline(deadline: date) -> list[UserData]:
         select(UserData).where(UserData.deadline == deadline)
       )
       await session.commit()
-      return result.scalars().all()
+      return list(result.scalars().all())
     except SQLAlchemyError as e:
       print(e)
       return []
@@ -92,7 +91,7 @@ async def get_all_users() -> list[UserData]:
     try:
       result = await session.execute(select(UserData))
       await session.commit()
-      return result.scalars().all()
+      return list(result.scalars().all())
     except SQLAlchemyError as e:
       print(e)
       return []
@@ -115,7 +114,7 @@ async def pre_register_user(username: str, nickname: str, grade: Literal['b1', '
       await session.commit()
       return True
     except SQLAlchemyError as e:
-      session.rollback()
+      await session.rollback()
       print(e)
       return False
 
@@ -130,7 +129,7 @@ async def register_user(username: str, user_id: int, channel_id: int, deadline: 
         user.deadline = deadline
         await session.commit()
     except SQLAlchemyError as e:
-      session.rollback()
+      await session.rollback()
       print(e)
 
 
