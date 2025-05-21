@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
 from db.database import async_session
-from db.models import TimelineChannel, TimelineMessage, UserData
+from db.models import MemberRole, TimelineChannel, TimelineMessage, UserData
 
 
 async def get_timeline_channel_id(guild_id: int):
@@ -52,6 +52,15 @@ async def register_timeline_channel(guild_id: int, channel_id: int):
     else:
       session.add(TimelineChannel(guild_id=guild_id, timeline_id=channel_id))
     await session.commit()
+
+async def get_member_role_id(guild_id: int):
+  async with async_session() as session:
+    result = await session.execute(
+      select(MemberRole).where(MemberRole.guild_id == guild_id)
+    )
+    await session.commit()
+    role = result.scalar_one_or_none()
+    return role.member_role_id if role else None
 
 
 async def register_message(timeline_message_id: int, original_message_id: int):

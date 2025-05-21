@@ -1,5 +1,6 @@
 from aiohttp import web
 from aiohttp.web_request import Request
+from discord.ext import commands
 from pydantic import ValidationError
 
 from api.schemas import RegisterRequest
@@ -28,6 +29,12 @@ async def grant_member_role(request: Request):
     raw_data = await request.json()
     data = GrantRoleRequest(**raw_data)
     print(data)
+
+    cog = bot.get_cog('GrantMemberRole')
+    assert cog is not None
+
+    await cog.
+
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
@@ -37,6 +44,7 @@ async def grant_member_role(request: Request):
 async def start_web_server():
   app = web.Application()
   app.router.add_post("/pre_register", pre_register)
+  app.router.add_post("/grant_member_role", grant_member_role)
   runner = web.AppRunner(app)
   await runner.setup()
   site = web.TCPSite(runner, "0.0.0.0", 8000)
