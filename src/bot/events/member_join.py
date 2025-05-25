@@ -10,21 +10,16 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 import db.crud as crud
+from utils.constants import (
+  GUEST_ROLE_ID,
+  GUILD_ID,
+  INFO_CHANNEL_ID,
+  TIMES_MESSAGE_ID,
+  WELCOME_CHANNEL_ID,
+)
 
 ABS = Path(__file__).resolve().parents[3]
 load_dotenv(ABS / '.env')
-
-def getenv_int(name: str) -> int:
-  value = os.getenv(name)
-  if value is None:
-    raise ValueError(f"Environment variable '{name}' is not set")
-  return int(value)
-
-GUEST_ROLE_ID = getenv_int("GUEST_ROLE_ID")
-INFO_CHANNEL_ID = getenv_int("INFO_CHANNEL_ID")
-WELCOME_CHANNEL_ID = getenv_int("WELCOME_CHANNEL_ID")
-TIMES_MESSAGE_ID = getenv_int("TIMES_MESSAGE_ID")
-GUILD_ID = getenv_int("GUILD_ID")
 
 JST = tz(td(hours=9), 'JST')
 
@@ -32,7 +27,6 @@ START = time(hour=0, tzinfo=JST)
 
 print(START.tzinfo)
 print(START)
-
 
 class MemberJoin(commands.Cog):
   def __init__(self, bot: commands.Bot):

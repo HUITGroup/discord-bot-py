@@ -2,10 +2,20 @@
 from pydantic import BaseModel
 
 
-class RegisterRequest(BaseModel):
+class RegisterData(BaseModel):
   grade: str
   username: str
   nickname: str
 
-class GrantRoleRequest(BaseModel):
+class RegisterRequest(BaseModel):
+  data: RegisterData
+  timestamp: str
+  signature: str
+
+class GrantRoleData(BaseModel):
   username: str
+
+class GrantRoleRequest(BaseModel):
+  data: GrantRoleData
+  timestamp: str
+  signature: str

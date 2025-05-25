@@ -62,6 +62,17 @@ async def get_member_role_id(guild_id: int):
     role = result.scalar_one_or_none()
     return role.member_role_id if role else None
 
+async def reset_deadline(username: str):
+  async with async_session() as session:
+    try:
+      user = await session.get(UserData, username)
+      print(user)
+      if user:
+        user.deadline = None
+        await session.commit()
+    except SQLAlchemyError as e:
+      await session.rollback()
+      print(e)
 
 async def register_message(timeline_message_id: int, original_message_id: int):
   async with async_session() as session:
