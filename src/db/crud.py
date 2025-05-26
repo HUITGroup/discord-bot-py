@@ -122,6 +122,19 @@ async def get_user_by_username(user_name: str) -> UserData|None:
       print(e)
       return None
 
+async def get_user_by_nickname(nickname: str) -> tuple[UserData|None, bool]:
+  async with async_session() as session:
+    try:
+      result = await session.execute(
+        select(UserData).where(UserData.nickname == nickname)
+      )
+      await session.rollback()
+
+      return result.scalar_one(), True
+    except SQLAlchemyError as e:
+      print(e)
+      return None, False
+
 async def get_users_by_deadline(deadline: date) -> list[UserData]:
   async with async_session() as session:
     try:

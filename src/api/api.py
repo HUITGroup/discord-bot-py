@@ -41,13 +41,30 @@ async def pre_register(request: Request):
     data = RegisterRequest(**raw_data).data
     print(data)
 
-    await crud.pre_register_user(data.username, data.nickname, data.grade)
-    return web.Response(text="ok")
   except (ValidationError, AssertionError) as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
     print(e)
     return web.json_response({"error": "Internal server error"}, status=500)
+
+  user = await crud.get_user_by_username(data.username)
+  if user is None:
+    # nicknameが被っているかどうかの処理
+    existing_user, status = await crud.get_user_by_nickname(data.nickname)
+    if not status:
+      return web.json_response({"error": "Internal server error"}, status=500)
+
+    if existing_user is None:
+      ...
+    else:
+      ..
+
+    await crud.pre_register_user(data.username, data.nickname, data.grade)
+  else:
+    # 学年更新処理のみ
+    ...
+
+  return web.Response(text="ok")
 
 async def grant_member_role(request: Request):
   try:
