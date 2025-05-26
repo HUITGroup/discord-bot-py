@@ -3,26 +3,31 @@ import hmac
 import os
 import time
 from pathlib import Path
+from typing import Any
 
 from aiohttp import web
 from aiohttp.web_request import Request
-from discord.ext import commands
+from aiohttp.web_response import Response
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
 from api.schemas import RegisterRequest
+from api.schemas.schema import BaseRequest, GrantRoleRequest
 from bot import bot
 from db import crud
-from src.api.schemas.schema import GrantRoleRequest
+from utils.constants import GUILD_ID
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
 
-HMAC_KEY = os.getenv('HMAC_KEY')
+HMAC_KEY_STR = os.getenv('HMAC_KEY')
+if HMAC_KEY_STR is None:
+  raise NotImplementedError()
+HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
 
-def verify_signature(message: str, timestamp: str, signature: str) -> bool:
+def verify_signature(message: dict[str, Any], timestamp: str, signature: str) -> bool:
   try:
     data = f"{message}{timestamp}".encode()
     expected = hmac.new(HMAC_KEY, data, hashlib.sha256).hexdigest()
@@ -35,7 +40,6 @@ async def pre_register(request: Request):
     raw_data = await request.json()
     data = RegisterRequest(**raw_data).data
     print(data)
-    assert data.grade in {'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other'}
 
     await crud.pre_register_user(data.username, data.nickname, data.grade)
     return web.Response(text="ok")
@@ -50,44 +54,48 @@ async def grant_member_role(request: Request):
     raw_data = await request.json()
     data = GrantRoleRequest(**raw_data).data
     print(data)
-
-    cog = bot.get_cog('GrantMemberRole')
-    assert cog is not None
-
-    res = await cog.grant_member_role(data.username)
-
-    if res:
-      return web.Response(text="ok")
-    else:
-      return web.json_response({"error": "user is not found."}, status=404)
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
     print(e)
     return web.json_response({"error": "Internal server error"}, status=500)
 
+  cog = bot.get_cog('GrantMemberRole')
+  assert cog is not None
+
+  res = await cog.grant_member_role(data.username)
+
+  if not res:
+    return web.json_response({"error": "user is not found."}, status=404)
+
+  res = await cog.manage_channel(data.username)
+
 @web.middleware
-async def hmac_auth_middleware(request: Request, handler):
+async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) -> Response:
   try:
-    body: dict[str, str] = await request.json()
-    data = body.get("data")
-    timestamp = body.get("timestamp")
-    signature = body.get("signature")
+    raw_body = await request.json()
+    body = BaseRequest(**raw_body)
+    data: dict[str, str] = body.data
+    timestamp = body.timestamp
+    signature = body.signature
+    year = body.year
 
-    # 1. 値がすべて揃っているか
-    if not all([data, timestamp, signature]):
-      raise ValueError("Missing fields")
-
-    # 2. timestampの妥当性チェック
+    # timestampの妥当性チェック
     if abs(time.time() - int(timestamp)) > ALLOWED_TIMESTAMP_DIFF:
       raise ValueError("Timestamp out of range")
 
-    # 3. HMAC署名チェック
+    # HMAC署名チェック
     if not verify_signature(data, timestamp, signature):
       raise ValueError("Invalid signature")
 
   except Exception as e:
     return web.json_response({"error": "Unauthorized", "reason": str(e)}, status=401)
+
+  db_year = await crud.get_year(GUILD_ID)
+  assert db_year is not None
+
+  if year != db_year:
+    return web.json_response({"error": f"The form you submitted is outdated. The current version is {year}"}, status=400)
 
   return await handler(request)
 

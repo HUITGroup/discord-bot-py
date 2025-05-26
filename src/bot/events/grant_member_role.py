@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 from db import crud
@@ -33,5 +34,29 @@ class GrantMemberRole(commands.Cog):
     await discord_user.remove_roles(guest_role)
 
     await crud.reset_deadline(username)
+
+    return True
+
+  async def manage_channel(self, username: str) -> bool:
+    user = await crud.get_user_by_username(username)
+    if user is None:
+      return False
+
+    if user.channel_id is None:
+      ...
+    else:
+      channel = self.guild.get_channel(user.channel_id)
+      assert channel is not None
+
+      if user.grade in {'m1', 'm2', 'd'}:
+        category_name = 'TIMES M/D'
+      elif user.grade == 'other':
+        category_name = 'TIMES other'
+      else:
+        category_name = f'TIMES {user.grade.upper()}'
+
+      category = discord.utils.get(self.guild.categories, name=category_name)
+      assert category is not None
+      await channel.edit(category=category)
 
     return True

@@ -1,6 +1,6 @@
 """モデル定義部分"""
 
-from sqlalchemy import BigInteger, CheckConstraint, Date, String
+from sqlalchemy import BigInteger, CheckConstraint, Date, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.database import Base
@@ -20,6 +20,7 @@ class MemberRole(Base):
   __tablename__ = "member_role_id"
   guild_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
   member_role_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+  year: Mapped[int] = mapped_column(Integer, nullable=False)
 
 class UserData(Base):
   __tablename__ = "user_data"

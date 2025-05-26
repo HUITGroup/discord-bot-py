@@ -53,6 +53,34 @@ async def register_timeline_channel(guild_id: int, channel_id: int):
       session.add(TimelineChannel(guild_id=guild_id, timeline_id=channel_id))
     await session.commit()
 
+async def update_member_role_id(guild_id: int, member_role_id: int, year: int) -> None:
+  async with async_session() as session:
+    try:
+      result = await session.get(MemberRole, guild_id)
+      if result is None:
+        session.add(MemberRole(guild_id=guild_id, member_role_id=member_role_id, year=year))
+      else:
+        result.member_role_id = member_role_id
+        result.year = year
+
+      await session.commit()
+    except SQLAlchemyError as e:
+      print(e)
+      await session.rollback()
+
+async def get_year(guild_id: int) -> int|None:
+  async with async_session() as session:
+    try:
+      result = await session.get(MemberRole, guild_id)
+      await session.commit()
+      if result is None:
+        return None
+      else:
+        return result.year
+    except SQLAlchemyError as e:
+      print(e)
+      await session.rollback()
+
 async def get_member_role_id(guild_id: int):
   async with async_session() as session:
     result = await session.execute(
@@ -116,6 +144,18 @@ async def get_all_users() -> list[UserData]:
       print(e)
       return []
 
+async def get_channel_id_by_user_id(user_id: int) -> int|None:
+  async with async_session() as session:
+    try:
+      result = await session.execute(
+        select(UserData).where(UserData.user_id == user_id)
+      )
+      await session.commit()
+      return result.scalar_one().channel_id
+    except SQLAlchemyError as e:
+      print(e)
+      return None
+
 async def pre_register_user(username: str, nickname: str, grade: Literal['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other']):
   async with async_session() as session:
     try:
@@ -151,7 +191,6 @@ async def register_user(username: str, user_id: int, channel_id: int, deadline: 
     except SQLAlchemyError as e:
       await session.rollback()
       print(e)
-
 
 async def delete_user(user_id: int):
   async with async_session() as session:

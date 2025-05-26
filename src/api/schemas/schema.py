@@ -1,21 +1,26 @@
 """型定義部分"""
+from typing import Any, Generic, Literal, TypeVar
+
 from pydantic import BaseModel
 
+T = TypeVar('T')
+
+class BaseRequest(BaseModel, Generic[T]):
+  data: T
+  timestamp: str
+  signature: str
+  year: int
 
 class RegisterData(BaseModel):
-  grade: str
+  grade: Literal['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other']
   username: str
   nickname: str
 
-class RegisterRequest(BaseModel):
-  data: RegisterData
-  timestamp: str
-  signature: str
+class RegisterRequest(BaseRequest[RegisterData]):
+  ...
 
 class GrantRoleData(BaseModel):
   username: str
 
-class GrantRoleRequest(BaseModel):
-  data: GrantRoleData
-  timestamp: str
-  signature: str
+class GrantRoleRequest(BaseRequest[GrantRoleData]):
+  ...

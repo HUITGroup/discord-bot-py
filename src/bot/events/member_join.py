@@ -6,16 +6,19 @@ from datetime import timezone as tz
 from pathlib import Path
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 import db.crud as crud
 from utils.constants import (
+  ARCHIVED_CATEGORY_ID,
   GUEST_ROLE_ID,
   GUILD_ID,
   INFO_CHANNEL_ID,
   TIMES_MESSAGE_ID,
   WELCOME_CHANNEL_ID,
+  YOUR_ID,
 )
 
 ABS = Path(__file__).resolve().parents[3]
@@ -49,6 +52,8 @@ class MemberJoin(commands.Cog):
   async def _prepare_channel(self, member: discord.Member, raw_limit_day: date) -> None:
     user = await crud.get_user_by_username(member.name)
     if user is None:
+      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした．フォームに入力したニックネームとdiscord上のニックネームが一致しているか確認してください．'
+      await member.guild.system_channel.send(msg)
       return
 
     if user.grade in {'m1', 'm2', 'd'}:
@@ -73,6 +78,46 @@ class MemberJoin(commands.Cog):
       channel = self.guild.get_channel(user.channel_id)
       assert channel is not None
       await channel.edit(category=category)
+
+  @app_commands.command(name='link_member_role', description='指定年度のmemberロールと紐付けるコマンドです')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def link_member_role(self, interaction: discord.Interaction, year: int):
+    role = discord.utils.get(self.guild.roles, name=f'member-{year}')
+    if role is None:
+      await interaction.response.send_message(f'member-{year}ロールが見つかりません．member-{year}ロールが存在することを確認してください')
+      return
+
+    member_role_id = role.id
+    await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
+
+    await interaction.response.send_message(f'紐付けが完了しました')
+
+  @app_commands.command(name='rename', description='自分のtimesの名前を変更するコマンドです')
+  async def rename(self, interactions: discord.Interaction, name: str):
+    channel_id = await crud.get_channel_id_by_user_id(interactions.user.id)
+    you = self.guild.get_member(YOUR_ID)
+    if you is None:
+      you = 'Bot管理者'
+
+    if channel_id is None:
+      if isinstance(you, str):
+        msg = f'あなたのtimesが見つかりませんでした．お近くの{you}までお知らせください．'
+      else:
+        msg = f'あなたのtimesが見つかりませんでした．お近くの{you.mention}までお知らせください．'
+
+      await interactions.response.send_message(msg)
+      return
+
+    channel = self.guild.get_channel(channel_id)
+    assert isinstance(channel, discord.TextChannel)
+
+    await channel.edit(name=f'times_{name}')
+
+    if isinstance(you, str):
+      msg = f'変更しました．変わっていない場合はdiscordを再起動するか，お近くの{you}までお知らせください'
+    else:
+      msg = f'変更しました．変わっていない場合はdiscordを再起動するか，お近くの{you.mention}までお知らせください'
+    await interactions.response.send_message(msg)
 
   @commands.Cog.listener()
   async def on_member_join(self, member: discord.Member):
@@ -111,6 +156,28 @@ class MemberJoin(commands.Cog):
   @commands.Cog.listener()
   async def on_member_leave(self, member: discord.Member):
     await crud.delete_user(member.id)
+
+  @commands.Cog.listener()
+  async def on_member_update(self, before: discord.Member, after: discord.Member):
+    if before.roles == after.roles:
+      return
+
+    roles = after.roles
+    member_role = discord.utils.find(lambda role: 'member' in role.name, roles)
+    guest_role = discord.utils.get(roles, id=GUILD_ID)
+
+    if member_role is None and guest_role is None:
+      user_id = after.id
+      channel_id = await crud.get_user_by_username(user_id)
+      assert channel_id is not None
+
+      channel = self.guild.get_channel(channel_id)
+      assert channel is not None
+
+      category = discord.utils.get(self.guild.categories, id=ARCHIVED_CATEGORY_ID)
+      assert isinstance(channel, discord.TextChannel)
+
+      await channel.edit(category=category)
 
   @tasks.loop(time=START)
   async def check_deadline(self):
