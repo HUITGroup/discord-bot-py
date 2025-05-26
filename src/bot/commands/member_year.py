@@ -9,10 +9,10 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from utils.constants import BOT_ROLE_ID
+
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
-
-BOT_ROLE_ID = int(os.getenv("BOT_ROLE_ID"))
 
 JST = tz(td(hours=9), 'JST')
 
