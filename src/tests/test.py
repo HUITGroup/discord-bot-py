@@ -27,7 +27,7 @@ data = {
 #   'nickname': 'misaizu_valid',
 # }
 
-timestamp = int(time.time())
+timestamp = dt.now().isoformat()
 hmac_data = f'{data}{timestamp}'.encode()
 
 body = {

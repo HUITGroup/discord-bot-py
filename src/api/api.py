@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import os
 import time
+from datetime import datetime as dt
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,7 @@ HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
 
-def verify_signature(message: dict[str, Any], timestamp: int, signature: str) -> bool:
+def verify_signature(message: dict[str, Any], timestamp: str, signature: str) -> bool:
   try:
     data = f"{message}{timestamp}".encode()
     expected = hmac.new(HMAC_KEY, data, hashlib.sha256).hexdigest()
@@ -96,7 +97,7 @@ async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) ->
     year = body.year
 
     # timestampの妥当性チェック
-    if abs(time.time() - timestamp) > ALLOWED_TIMESTAMP_DIFF:
+    if abs(time.time() - dt.fromisoformat(timestamp).timestamp()) > ALLOWED_TIMESTAMP_DIFF:
       raise ValueError("Timestamp out of range")
 
     # HMAC署名チェック
