@@ -12,8 +12,6 @@ ROOT = Path(__file__).resolve().parents[3]
 ABS = Path(__file__).resolve().parents[3]
 load_dotenv(ABS / '.env')
 
-GUEST_ROLE_ID = int(os.getenv('GUEST_ROLE_ID'))
-GUILD_ID = int(os.getenv('GUILD_ID'))
 MY_ID = 521879689447473152
 
 class Parrot(commands.Cog):

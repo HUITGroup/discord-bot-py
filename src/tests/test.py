@@ -1,16 +1,49 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import hashlib
+import hmac
+import os
+import re
+import time
+from datetime import datetime as dt
+from pathlib import Path
 
+import requests
+from dotenv import load_dotenv
 
-scope = ['https://spreadsheets.google.com.feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('./huit-bot-105deb6489c9.json')
+ABS = Path(__file__).resolve().parents[2]
+load_dotenv(ABS / '.env')
 
-client = gspread.authorize(creds)
+HMAC_KEY_STR = os.getenv('HMAC_KEY')
+assert HMAC_KEY_STR is not None
 
-spreadsheet = client.open('2025年度 北大 IT 研究会 入会フォーム（回答）')
+HMAC_KEY = HMAC_KEY_STR.encode()
 
-worksheet = spreadsheet.sheet1
-d = worksheet.get_all_records()
+data = {
+  'username': 'sub8152'
+}
 
-for l in d:
-  print(l)
+# data = {
+#   'grade': 'b3',
+#   'username': 'sub8152',
+#   'nickname': 'misaizu_valid',
+# }
+
+timestamp = int(time.time())
+hmac_data = f'{data}{timestamp}'.encode()
+
+body = {
+  'data': data,
+  'signature': hmac.new(HMAC_KEY, hmac_data, hashlib.sha256).hexdigest(),
+  'timestamp': timestamp,
+  'year': 2025,
+}
+
+res = requests.post(
+  'http://localhost:8000/grant_member_role',
+  json=body,
+  headers={
+    'Content-Type': 'application/json'
+  },
+)
+
+print(res.status_code)
+# print(res.json())

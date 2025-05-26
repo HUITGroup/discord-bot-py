@@ -7,7 +7,7 @@ T = TypeVar('T')
 
 class BaseRequest(BaseModel, Generic[T]):
   data: T
-  timestamp: str
+  timestamp: int
   signature: str
   year: int
 

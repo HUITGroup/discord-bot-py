@@ -28,6 +28,7 @@ EXTENSIONS = [
   'bot.commands.member_year',
   'bot.events.member_join',
   'bot.events.timeline',
+  'bot.events.grant_member_role',
   'tests.bot.commands.check_role'
 ]
 

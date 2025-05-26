@@ -130,7 +130,7 @@ async def get_user_by_nickname(nickname: str) -> tuple[UserData|None, bool]:
       )
       await session.rollback()
 
-      return result.scalar_one(), True
+      return result.scalar_one_or_none(), True
     except SQLAlchemyError as e:
       print(e)
       return None, False
@@ -164,7 +164,11 @@ async def get_channel_id_by_user_id(user_id: int) -> int|None:
         select(UserData).where(UserData.user_id == user_id)
       )
       await session.commit()
-      return result.scalar_one().channel_id
+      user = result.scalar_one_or_none()
+      if user is None:
+        return None
+      else:
+        return user.channel_id
     except SQLAlchemyError as e:
       print(e)
       return None
@@ -175,6 +179,7 @@ async def pre_register_user(username: str, nickname: str, grade: Literal['b1', '
       user = await session.get(UserData, username)
       if user:
         user.grade = grade
+        user.nickname = nickname
       else:
         session.add(
           UserData(

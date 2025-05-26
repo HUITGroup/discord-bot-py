@@ -11,14 +11,13 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from db import crud
+from utils.constants import GUEST_ROLE_ID, GUILD_ID
 
 JST = tz(td(hours=9), 'JST')
 
 ABS = Path(__file__).resolve().parents[4]
 load_dotenv(ABS / '.env')
 
-GUEST_ROLE_ID = int(os.getenv('GUEST_ROLE_ID'))
-GUILD_ID = int(os.getenv('GUILD_ID'))
 MY_ID = 521879689447473152
 
 roles = {

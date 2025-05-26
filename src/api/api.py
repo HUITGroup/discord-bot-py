@@ -27,7 +27,7 @@ HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
 
-def verify_signature(message: dict[str, Any], timestamp: str, signature: str) -> bool:
+def verify_signature(message: dict[str, Any], timestamp: int, signature: str) -> bool:
   try:
     data = f"{message}{timestamp}".encode()
     expected = hmac.new(HMAC_KEY, data, hashlib.sha256).hexdigest()
@@ -35,7 +35,7 @@ def verify_signature(message: dict[str, Any], timestamp: str, signature: str) ->
   except Exception:
     return False
 
-async def pre_register(request: Request):
+async def submission(request: Request):
   try:
     raw_data = await request.json()
     data = RegisterRequest(**raw_data).data
@@ -47,21 +47,18 @@ async def pre_register(request: Request):
     return web.json_response({"error": "Internal server error"}, status=500)
 
   user = await crud.get_user_by_username(data.username)
+  cog = bot.get_cog('MemberJoin')
+  assert cog is not None
   if user is None:
     # nicknameが被っているかどうかの処理
-    existing_user, status = await crud.get_user_by_nickname(data.nickname)
-    if not status:
-      return web.json_response({"error": "Internal server error"}, status=500)
-
-    if existing_user is None:
-      ...
-    else:
-      ...
-
     await crud.pre_register_user(data.username, data.nickname, data.grade)
+    await cog.check_already_in_server(data.username)
+  elif user.channel_id is None:
+    await crud.pre_register_user(data.username, data.nickname, data.grade)
+    await cog.check_already_in_server(data.username)
   else:
     # 学年更新処理のみ
-    ...
+    await crud.pre_register_user(data.username, data.nickname, data.grade)
 
   return web.Response(text="ok")
 
@@ -86,6 +83,8 @@ async def grant_member_role(request: Request):
 
   res = await cog.manage_channel(data.username)
 
+  return web.Response(text='ok')
+
 @web.middleware
 async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) -> Response:
   try:
@@ -97,7 +96,7 @@ async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) ->
     year = body.year
 
     # timestampの妥当性チェック
-    if abs(time.time() - int(timestamp)) > ALLOWED_TIMESTAMP_DIFF:
+    if abs(time.time() - timestamp) > ALLOWED_TIMESTAMP_DIFF:
       raise ValueError("Timestamp out of range")
 
     # HMAC署名チェック
@@ -117,7 +116,7 @@ async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) ->
 
 async def start_web_server():
   app = web.Application(middlewares=[hmac_auth_middleware])
-  app.router.add_post("/pre_register", pre_register)
+  app.router.add_post("/submission", submission)
   app.router.add_post("/grant_member_role", grant_member_role)
   runner = web.AppRunner(app)
   await runner.setup()
