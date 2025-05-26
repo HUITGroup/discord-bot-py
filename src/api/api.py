@@ -40,8 +40,7 @@ async def pre_register(request: Request):
     raw_data = await request.json()
     data = RegisterRequest(**raw_data).data
     print(data)
-
-  except (ValidationError, AssertionError) as e:
+  except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
     print(e)
@@ -57,7 +56,7 @@ async def pre_register(request: Request):
     if existing_user is None:
       ...
     else:
-      ..
+      ...
 
     await crud.pre_register_user(data.username, data.nickname, data.grade)
   else:
