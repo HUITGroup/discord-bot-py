@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import os
 import time
 from datetime import datetime as dt
@@ -12,8 +13,7 @@ from aiohttp.web_response import Response
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
-from api.schemas import RegisterRequest
-from api.schemas.schema import BaseRequest, GrantRoleRequest
+from api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
 from bot import bot
 from db import crud
 from utils.constants import GUILD_ID
@@ -28,7 +28,7 @@ HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
 
-def verify_signature(message: dict[str, Any], timestamp: str, signature: str) -> bool:
+def verify_signature(message: str, timestamp: str, signature: str) -> bool:
   try:
     data = f"{message}{timestamp}".encode()
     expected = hmac.new(HMAC_KEY, data, hashlib.sha256).hexdigest()
@@ -39,7 +39,7 @@ def verify_signature(message: dict[str, Any], timestamp: str, signature: str) ->
 async def submission(request: Request):
   try:
     raw_data = await request.json()
-    data = RegisterRequest(**raw_data).data
+    data = RegisterData(**json.loads(raw_data['data']))
     print(data)
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
@@ -66,7 +66,7 @@ async def submission(request: Request):
 async def grant_member_role(request: Request):
   try:
     raw_data = await request.json()
-    data = GrantRoleRequest(**raw_data).data
+    data = GrantRoleData(**json.loads(raw_data['data']))
     print(data)
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
@@ -91,7 +91,7 @@ async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) ->
   try:
     raw_body = await request.json()
     body = BaseRequest(**raw_body)
-    data: dict[str, str] = body.data
+    data = body.data
     timestamp = body.timestamp
     signature = body.signature
     year = body.year

@@ -1,12 +1,11 @@
 """型定義部分"""
-from typing import Generic, Literal, TypeVar
+from typing import Literal
 
 from pydantic import BaseModel
 
-T = TypeVar('T')
 
-class BaseRequest(BaseModel, Generic[T]):
-  data: T
+class BaseRequest(BaseModel):
+  data: str
   timestamp: str
   signature: str
   year: int
@@ -16,11 +15,6 @@ class RegisterData(BaseModel):
   username: str
   nickname: str
 
-class RegisterRequest(BaseRequest[RegisterData]):
-  ...
-
 class GrantRoleData(BaseModel):
   username: str
 
-class GrantRoleRequest(BaseRequest[GrantRoleData]):
-  ...
