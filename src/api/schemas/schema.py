@@ -1,5 +1,5 @@
 """型定義部分"""
-from typing import Any, Generic, Literal, TypeVar
+from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel
 
