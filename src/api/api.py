@@ -5,7 +5,7 @@ import os
 import time
 from datetime import datetime as dt
 from pathlib import Path
-from typing import Any
+from typing import Any, Awaitable, Callable, cast
 
 from aiohttp import web
 from aiohttp.web_request import Request
@@ -15,6 +15,8 @@ from pydantic import ValidationError
 
 from api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
 from bot import bot
+from bot.events.grant_member_role import GrantMemberRole
+from bot.events.member_join import MemberJoin
 from db import crud
 from utils.constants import GUILD_ID
 
@@ -50,6 +52,8 @@ async def submission(request: Request):
   user = await crud.get_user_by_username(data.username)
   cog = bot.get_cog('MemberJoin')
   assert cog is not None
+  cog = cast(MemberJoin, cog)
+
   if user is None:
     # nicknameが被っているかどうかの処理
     await crud.pre_register_user(data.username, data.nickname, data.grade)
@@ -76,6 +80,7 @@ async def grant_member_role(request: Request):
 
   cog = bot.get_cog('GrantMemberRole')
   assert cog is not None
+  cog = cast(GrantMemberRole, cog)
 
   res = await cog.grant_member_role(data.username)
 
@@ -87,7 +92,7 @@ async def grant_member_role(request: Request):
   return web.Response(text='ok')
 
 @web.middleware
-async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) -> Response:
+async def hmac_auth_middleware(request: Request, handler: Callable[[web.Request], Awaitable[web.Response]]) -> Response:
   try:
     raw_body = await request.json()
     body = BaseRequest(**raw_body)

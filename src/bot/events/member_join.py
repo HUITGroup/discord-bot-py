@@ -27,7 +27,7 @@ load_dotenv(ABS / '.env')
 
 JST = tz(td(hours=9), 'JST')
 
-START = time(hour=0, tzinfo=JST)
+START = time(hour=9, tzinfo=JST)
 
 print(START.tzinfo)
 print(START)
