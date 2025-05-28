@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
+from typing import cast
 
 from dotenv import load_dotenv
 
@@ -15,6 +16,7 @@ LOG.mkdir(exist_ok=True)
 load_dotenv(ABS / '.env')
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+assert TOKEN is not None, '環境変数 DISCORD_TOKEN がセットされていません'
 
 log_handler = logging.FileHandler(filename=LOG / 'discord.log', encoding='utf-8', mode='w')
 log_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))

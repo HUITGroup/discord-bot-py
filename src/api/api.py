@@ -3,9 +3,10 @@ import hmac
 import json
 import os
 import time
+from collections.abc import Awaitable, Callable
 from datetime import datetime as dt
 from pathlib import Path
-from typing import Any, Awaitable, Callable, cast
+from typing import cast
 
 from aiohttp import web
 from aiohttp.web_request import Request
