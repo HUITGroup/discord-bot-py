@@ -1,48 +1,46 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  standard:
+    format: "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
+
 handlers:
-  file:
+  consoleHandler:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: standard
+    stream: ext://sys.stdout
+
+  huitHandler:
+    class: utils.loggers.DiscordHandler
+    level: WARNING
+    formatter: standard
+
+  fileHandler:
     class: logging.FileHandler
-    level: INFO
+    level: DEBUG
     formatter: standard
     filename: logs/discord.log
     encoding: utf-8
     mode: w
 
-logging:
-  version: 1
-  disable_existing_loggers: false
+loggers:
+  huitLogger:
+    level: DEBUG
+    handlers: [consoleHandler, huitHandler, fileHandler]
+    propagate: false
 
-  formatters:
-    standard:
-      format: "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
+  same_hierarchy:
+    level: DEBUG
+    handlers: [consoleHandler, huitHandler, fileHandler]
+    propagate: false
 
-  handlers:
-    console:
-      class: logging.StreamHandler
-      level: DEBUG
-      formatter: standard
-      stream: ext://sys.stdout
+  lower.sub:
+    level: DEBUG
+    handlers: [consoleHandler, huitHandler, fileHandler]
+    propagate: false
 
-    huit:
-      class: loggers.DiscordHandler
-      level: WARNING
-      formatter: standard
-
-  loggers:
-    huit_logger:
-      level: DEBUG
-      handlers: [console, huit]
-      propagate: false
-
-    same_hierarchy:
-      level: DEBUG
-      handlers: [console, huit]
-      propagate: false
-
-    lower.sub:
-      level: DEBUG
-      handlers: [console, huit]
-      propagate: false
-
-  root:
-    level: INFO
-    handlers: [console]
+root:
+  level: INFO
+  handlers: [console]

@@ -1,9 +1,10 @@
 import asyncio
 import logging
+import logging.config
 import os
 from pathlib import Path
-from typing import cast
 
+import yaml
 from dotenv import load_dotenv
 
 from api import start_web_server
@@ -18,12 +19,6 @@ load_dotenv(ABS / '.env')
 TOKEN = os.getenv("DISCORD_TOKEN")
 assert TOKEN is not None, '環境変数 DISCORD_TOKEN がセットされていません'
 
-log_handler = logging.FileHandler(filename=LOG / 'discord.log', encoding='utf-8', mode='w')
-log_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
-logger.addHandler(log_handler)
-
 EXTENSIONS = [
   'bot.commands.help',
   'bot.commands.parrot',
@@ -33,6 +28,11 @@ EXTENSIONS = [
   'bot.events.grant_member_role',
   'tests.bot.commands.check_role'
 ]
+
+with open(ABS / 'configs' / 'log_config.yaml') as f:
+  log_config = yaml.safe_load(f)
+
+logging.config.dictConfig(log_config)
 
 async def main():
   await init_models()
