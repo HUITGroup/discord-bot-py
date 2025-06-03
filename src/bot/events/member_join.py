@@ -148,7 +148,7 @@ class MemberJoin(commands.Cog):
 
     user = await crud.get_user_by_username(member.name)
     if user is None:
-      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。フォームに入力したニックネームとdiscord上のニックネームが一致しているか確認してください。\nhttps://forms.gle/7xzSLV9xvpciJoJYA'
+      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。フォームに入力した「Discord の ID」が実際のものと一致しているか確認してください。\nhttps://forms.gle/7xzSLV9xvpciJoJYA\nわからない点があれば `@moderator` までご連絡ください。'
       await member.guild.system_channel.send(msg)
       return
 
