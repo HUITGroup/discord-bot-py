@@ -1,3 +1,4 @@
+import logging
 import re
 
 import discord
@@ -6,6 +7,7 @@ from discord.ext import commands
 from db import crud
 from utils.constants import GUEST_ROLE_ID, GUILD_ID
 
+logger = logging.getLogger('huitLogger')
 
 class GrantMemberRole(commands.Cog):
   def __init__(self, bot: commands.Bot) -> None:
@@ -15,7 +17,11 @@ class GrantMemberRole(commands.Cog):
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
-    member_role_id = await crud.get_member_role_id(GUILD_ID)
+    member_role_id, err = await crud.get_member_role_id(GUILD_ID)
+    if err:
+      logger.error('member role idの検索処理が異常終了しました')
+      return False
+
     assert member_role_id is not None
     member_role = guild.get_role(member_role_id)
     assert member_role is not None
@@ -26,7 +32,10 @@ class GrantMemberRole(commands.Cog):
     deadline_role = discord.utils.find(lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)), guild.roles)
     assert deadline_role is not None
 
-    user = await crud.get_user_by_username(username)
+    user, err = await crud.get_user_by_username(username)
+    if err:
+      logger.error('ユーザーの検索処理が異常終了しました')
+      return False
     if user is None:
       return False
 
@@ -36,14 +45,19 @@ class GrantMemberRole(commands.Cog):
     await discord_user.add_roles(member_role)
     await discord_user.remove_roles(guest_role, deadline_role)
 
-    await crud.reset_deadline(username)
+    err = await crud.reset_deadline(username)
+    if err:
+      logger.error('体験入部期間の期日のリセット処理が異常終了しました')
 
     return True
 
   async def manage_channel(self, username: str) -> bool:
-    user = await crud.get_user_by_username(username)
+    user, err = await crud.get_user_by_username(username)
+    if err:
+      logger.error('ユーザーの検索処理が異常終了しました')
+      return True
     if user is None:
-      return False
+      return True
 
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
@@ -65,8 +79,8 @@ class GrantMemberRole(commands.Cog):
       assert category is not None
       await channel.edit(category=category)
 
-    return True
+    return False
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):  # noqa: D103
   cog = GrantMemberRole(bot)
   await bot.add_cog(cog)

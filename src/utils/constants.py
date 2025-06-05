@@ -1,3 +1,6 @@
+"""# src/utils/constants.py"""
+import discord
+
 GUILD_ID=543343653394055169
 
 BOT_ROLE_ID=1235844994372341783
@@ -6,7 +9,19 @@ GUEST_ROLE_ID=821021445006163978
 WELCOME_CHANNEL_ID=781880127579619401
 INFO_CHANNEL_ID=864696712115519489
 TIMES_MESSAGE_ID=862023717134794832
+LOG_CHANNEL_ID=1377108470641197076
 
 ARCHIVED_CATEGORY_ID=1117019756772462632
 
 YOUR_ID=521879689447473152
+
+LEVELNAME_TO_COLOR = {
+  'CRITICAL': discord.Color.dark_red(),
+  'FATAL': discord.Color.dark_red(),
+  'ERROR': discord.Color.red(),
+  'WARN': discord.Color.orange(),
+  'WARNING': discord.Color.orange(),
+  'INFO': discord.Color.blue(),
+  'DEBUG': discord.Color.green(),
+  'NOTSET': discord.Color.light_grey(),
+}

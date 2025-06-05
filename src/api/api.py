@@ -1,11 +1,13 @@
 import hashlib
 import hmac
 import json
+import logging
 import os
 import time
+from collections.abc import Awaitable, Callable
 from datetime import datetime as dt
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from aiohttp import web
 from aiohttp.web_request import Request
@@ -15,6 +17,8 @@ from pydantic import ValidationError
 
 from api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
 from bot import bot
+from bot.events.grant_member_role import GrantMemberRole
+from bot.events.member_join import MemberJoin
 from db import crud
 from utils.constants import GUILD_ID
 
@@ -23,10 +27,14 @@ load_dotenv(ABS / '.env')
 
 HMAC_KEY_STR = os.getenv('HMAC_KEY')
 if HMAC_KEY_STR is None:
-  raise NotImplementedError()
+  raise NotImplementedError(
+    f'環境変数HMAC_KEYがセットされていません\n{HMAC_KEY_STR=}'
+  )
 HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
+
+logger = logging.getLogger('huitLogger')
 
 def verify_signature(message: str, timestamp: str, signature: str) -> bool:
   try:
@@ -47,19 +55,30 @@ async def submission(request: Request):
     print(e)
     return web.json_response({"error": "Internal server error"}, status=500)
 
-  user = await crud.get_user_by_username(data.username)
+  user, err = await crud.get_user_by_username(data.username)
+  if err:
+    logger.error('ユーザーの検索処理が異常終了しました')
+    return web.json_response({"error": "internal server error"}, status=500)
+
   cog = bot.get_cog('MemberJoin')
   assert cog is not None
+  cog = cast(MemberJoin, cog)
+
   if user is None:
     # nicknameが被っているかどうかの処理
-    await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
     await cog.check_already_in_server(data.username)
   elif user.channel_id is None:
-    await crud.pre_register_user(data.username, data.nickname, data.grade)
+    # nicknameが被っているかどうかの処理
+    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
     await cog.check_already_in_server(data.username)
   else:
     # 学年更新処理のみ
-    await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+
+  if err:
+    logger.error('ユーザーの事前登録処理が異常終了しました')
+    return web.json_response({"error": "internal server error"}, status=500)
 
   return web.Response(text="ok")
 
@@ -76,18 +95,24 @@ async def grant_member_role(request: Request):
 
   cog = bot.get_cog('GrantMemberRole')
   assert cog is not None
+  cog = cast(GrantMemberRole, cog)
 
   res = await cog.grant_member_role(data.username)
 
   if not res:
     return web.json_response({"error": "user is not found."}, status=404)
 
-  res = await cog.manage_channel(data.username)
+  err = await cog.manage_channel(data.username)
+  if err:
+    return web.json_response({"error": "Internal server error"}, status=500)
 
   return web.Response(text='ok')
 
 @web.middleware
-async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) -> Response:
+async def hmac_auth_middleware(
+  request: Request,
+  handler: Callable[[web.Request], Awaitable[web.Response]]
+) -> Response:
   try:
     raw_body = await request.json()
     body = BaseRequest(**raw_body)
@@ -105,13 +130,28 @@ async def hmac_auth_middleware(request: Request, handler: web.RequestHandler) ->
       raise ValueError("Invalid signature")
 
   except Exception as e:
-    return web.json_response({"error": "Unauthorized", "reason": str(e)}, status=401)
+    return web.json_response(
+      {"error": "Unauthorized", "reason": str(e)},
+      status=401
+    )
 
-  db_year = await crud.get_year(GUILD_ID)
-  assert db_year is not None
+  db_year, err = await crud.get_member_role_year(GUILD_ID)
+  if err:
+    logger.error('member roleの年度検索処理が異常終了しました')
+
+  if db_year is None:
+    logger.critical(
+      'member roleが紐付けられていません。' \
+      '/link_member_roleコマンドで今年度のmember roleへの紐付けを行ってください'
+    )
 
   if year != db_year:
-    return web.json_response({"error": f"The form you submitted is outdated. The current version is {year}"}, status=400)
+    return web.json_response(
+      {
+        "error": f"The form you submitted has been outdated. The current version is {year}"
+      },
+      status=400
+    )
 
   return await handler(request)
 
@@ -122,6 +162,5 @@ async def start_web_server():
   runner = web.AppRunner(app)
   await runner.setup()
   site = web.TCPSite(runner, "0.0.0.0", 8000)
-  print('------------------------------------------------'*2)
   await site.start()
-  print('server booted')
+  logger.info('server booted')

@@ -1,4 +1,3 @@
-import os
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
@@ -57,6 +56,8 @@ class CreationView(Selection):
 
 async def _create(interaction: discord.Interaction, year: str):
   guild = interaction.guild
+  if guild is None:
+    return
   permissions = discord.Permissions(
     view_channel=True,
     manage_roles=True,
@@ -86,6 +87,7 @@ async def _create(interaction: discord.Interaction, year: str):
   )
 
   me = guild.get_role(BOT_ROLE_ID) # huit-botロールのIDをここに入れます。変化した場合は環境変数のファイルから適宜変えてください。
+  assert me is not None
   role = await guild.create_role(
     name=f'member-{year}',
     permissions=permissions,
@@ -147,7 +149,8 @@ async def _create(interaction: discord.Interaction, year: str):
 
   prev_role = discord.utils.get(guild.roles, name=f'member-{int(year)-1}')
   for channel in guild.channels:
-    if channel.permissions_for(prev_role).view_channel and not channel.permissions_for(role).view_channel:
+    if channel.permissions_for(prev_role).view_channel \
+    and not channel.permissions_for(role).view_channel:
       await channel.set_permissions(role, overwrite=permissions)
       print(f'{channel.name} での権限を設定しました')
       await interaction.channel.send(f'{channel.name} での権限を設定しました')
@@ -158,24 +161,31 @@ class MemberYear(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
 
-  @app_commands.command(name="create", description='member-{year} ロールを作成し、関連する権限を自動で設定します。yearに次年度以外の数値を入れると警告が表示されます。')
+  @app_commands.command(
+    name="create",
+    description='member-{year} ロールを作成し、関連する権限を自動で設定します。' \
+      'yearに次年度以外の数値を入れると警告が表示されます。'
+  )
   @app_commands.checks.has_permissions(administrator=True)
   async def create(self, interaction: discord.Interaction, year: str):
     this_year = int(dt.now(JST).year)
 
     if f'member-{year}' in interaction.guild.roles:
-      await interaction.response.send_message(f'`member-{year}` は既に存在します。再作成したい場合は、一度消してからコマンドを実行してください。', ephemeral=True)
+      await interaction.response.send_message(
+        f'`member-{year}` は既に存在します。'\
+        '再作成したい場合は、一度消してからコマンドを実行してください。',
+        ephemeral=True
+      )
     elif year != str(this_year):
       selection = CreationView(interaction.user, year)
-      await interaction.response.send_message(f'member-{year} は次年度用ではありません。作成しますか?', view=selection, ephemeral=True)
+      await interaction.response.send_message(
+        f'member-{year} は次年度用ではありません。作成しますか?',
+        view=selection,
+        ephemeral=True
+      )
     else:
       await interaction.response.send_message('続行します...', ephemeral=True)
       await _create(interaction, year)
-
-  # @app_commands.command(name="schedule_delete", description='member-{year} ロールを指定年月日 0:00 に削除します。過去の年月日を指定した場合警告が出ますが、強制的に実行すると即時削除されます。')
-  # @app_commands.checks.has_permissions(administrator=True)
-  # async def schedule_delete(self, interaction: discord.Interaction, member_year: str, yyyy: str, mm: str, dd: str):
-  #   ...
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(MemberYear(bot))
