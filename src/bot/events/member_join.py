@@ -50,7 +50,7 @@ class MemberJoin(commands.Cog):
       discord_user = discord.utils.get(guild.members, name=username)
       assert discord_user is not None
 
-      msg = f'{discord_user.mention} そのニックネームは既に使われています。お手数をおかけしますが、違うニックネームで再度フォームの送信をお願いします\nhttps://forms.gle/7xzSLV9xvpciJoJYA'
+      msg = f'{discord_user.mention} フォームで入力いただいた「ニックネーム（半角英数字）」が既に使われています。フォームを編集し、違うニックネームへの変更をお願いします。\nhttps://forms.gle/7xzSLV9xvpciJoJYA'
       await guild.system_channel.send(msg)
 
       return True
@@ -148,7 +148,7 @@ class MemberJoin(commands.Cog):
 
     user = await crud.get_user_by_username(member.name)
     if user is None:
-      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。フォームに入力したニックネームとdiscord上のニックネームが一致しているか確認してください。\nhttps://forms.gle/7xzSLV9xvpciJoJYA'
+      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。フォームに入力した「Discord の ID」が実際のものと一致しているか確認してください。\nフォームに誤りがあった場合はフォームを編集し、正しいものに修正してください。\nhttps://forms.gle/7xzSLV9xvpciJoJYA\nわからない点があれば `@moderator` までご連絡ください。'
       await member.guild.system_channel.send(msg)
       return
 
