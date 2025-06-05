@@ -27,7 +27,7 @@ EXTENSIONS = [
   'bot.events.member_join',
   'bot.events.timeline',
   'bot.events.grant_member_role',
-  'tests.bot.commands.check_role'
+  'tests.bot.commands.test_log'
 ]
 
 with open(ABS / 'configs' / 'log_config.yaml') as f:
@@ -41,7 +41,7 @@ discord_handler.setFormatter(logging.Formatter(
   "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
 ))
 
-for name in ['huitLogger', 'same_hierarchy', 'lower.sub']:
+for name in ['huitLogger', 'same_hierarchy', 'lower.sub', 'discord', 'sqlalchemy.engine']:
   logger = logging.getLogger(name)
   logger.addHandler(discord_handler)
 

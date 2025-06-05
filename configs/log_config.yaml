@@ -8,19 +8,33 @@ formatters:
 handlers:
   consoleHandler:
     class: logging.StreamHandler
-    level: DEBUG
+    level: INFO
     formatter: standard
     stream: ext://sys.stdout
 
   fileHandler:
     class: logging.FileHandler
-    level: DEBUG
+    level: INFO
     formatter: standard
     filename: logs/discord.log
     encoding: utf-8
     mode: w
 
 loggers:
+  textLogger:
+    level: INFO
+    handlers: [consoleHandler, fileHandler]
+    propagate: false
+
+  discord:
+    level: INFO
+    handlers: [consoleHandler, fileHandler]
+    propagate: false
+
+  sqlalchemy.engine:
+    level: INFO
+    handlers: [consoleHandler, fileHandler]
+
   huitLogger:
     level: DEBUG
     handlers: [consoleHandler, fileHandler]

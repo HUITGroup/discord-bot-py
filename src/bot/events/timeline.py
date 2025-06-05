@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
@@ -9,7 +10,7 @@ from discord.ext import commands
 import db.crud as crud
 
 JST = tz(td(hours=9), 'JST')
-
+logger = logging.getLogger('huitLogger')
 
 class Timeline(commands.Cog):
   def __init__(self, bot: commands.Bot):
@@ -21,16 +22,16 @@ class Timeline(commands.Cog):
     if self.bot.user.id == interaction.user.id:
       return
 
-    await crud.register_timeline_channel(interaction.guild_id, interaction.channel_id)
-    await interaction.response.send_message('このチャンネルを新しくtimelineチャンネルとして登録しました')
+    if interaction.guild_id is None:
+      return
 
-  @app_commands.command(name='check_id')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def check_id(self, interaction: discord.Interaction):
-    await interaction.response.send_message('⊂二二二（　＾ω＾）二⊃')
-    print(interaction.user.id)
-    print(self.bot.user.id)
-    ...
+    assert interaction.channel_id is not None
+
+    err = await crud.register_timeline_channel(interaction.guild_id, interaction.channel_id)
+    if err:
+      return
+
+    await interaction.response.send_message('このチャンネルを新しくtimelineチャンネルとして登録しました')
 
   def _create_embed(self, message: discord.Message) -> discord.Embed:
     embed = discord.Embed(
@@ -41,6 +42,8 @@ class Timeline(commands.Cog):
 
     if message.attachments:
       for attachment in message.attachments:
+        if attachment.content_type is None:
+          continue
         if attachment.content_type.startswith('image'):
           embed.set_image(url=attachment.url)
           break
@@ -50,6 +53,7 @@ class Timeline(commands.Cog):
       icon_url=message.author.avatar.url if message.author.avatar else None
     )
 
+    assert isinstance(message.channel, discord.TextChannel)
     footer = message.channel.name
 
     embed.set_footer(text=footer)
@@ -58,32 +62,43 @@ class Timeline(commands.Cog):
 
   @commands.Cog.listener()
   async def on_message(self, message: discord.Message):
-    print("create event")
+    logger.info("on_message called")
 
     channel = message.channel
+    if not isinstance(channel, discord.TextChannel):
+      return
 
     if not channel.name.startswith("times_"):
       return
 
-    timeline_channel_id = await crud.get_timeline_channel_id(message.guild.id)
+    timeline_channel_id, err = await crud.get_timeline_channel_id(message.guild.id)
+    if err:
+      return
 
     if timeline_channel_id is None:
+      logger.warning('timelineチャンネルが登録されていません。timelineチャンネルで`/timeline`コマンドを使用してください。')
       return
 
     embed = self._create_embed(message)
 
     timeline_channel = self.bot.get_channel(timeline_channel_id)
+    assert isinstance(timeline_channel, discord.TextChannel)
+
     timeline_message = await timeline_channel.send(content=message.jump_url, embed=embed)
 
-    await crud.register_message(timeline_message.id, message.id)
+    err = await crud.register_message(timeline_message.id, message.id)
+    if err:
+      return
 
-    print('create event completed')
+    logger.info('on_message completed')
 
   @commands.Cog.listener()
   async def on_message_edit(self, before: discord.Message, after: discord.Message):
-    print('update event')
+    logger.info('on_message_edit called')
 
-    timeline_message_id = await crud.get_timeline_message_id(before.id)
+    timeline_message_id, err = await crud.get_timeline_message_id(before.id)
+    if err:
+      return
     if not timeline_message_id:
       return
 
@@ -91,35 +106,53 @@ class Timeline(commands.Cog):
     if not message_channel:
       return
 
-    timeline_channel_id = await crud.get_timeline_channel_id(after.guild.id)
+    timeline_channel_id, err = await crud.get_timeline_channel_id(after.guild.id)
+    if err:
+      return
+
+    if timeline_channel_id is None:
+      logger.warning('timelineチャンネルが登録されていません。timelineチャンネルで`/timeline`コマンドを使用してください。')
+      return
 
     embed = self._create_embed(after)
 
     timeline_channel = self.bot.get_channel(timeline_channel_id)
+    assert isinstance(timeline_channel, discord.TextChannel)
+
     timeline_message = await timeline_channel.fetch_message(timeline_message_id)
     await timeline_message.edit(embed=embed)
 
-    print('update event completed')
+    print('on_message_edit completed')
 
   @commands.Cog.listener()
   async def on_message_delete(self, message: discord.Message):
-    print('delete event')
+    logger.info('on_message_delete called')
 
-    timeline_message_id = await crud.get_timeline_message_id(message.id)
-    if not timeline_message_id:
+    timeline_message_id, err = await crud.get_timeline_message_id(message.id)
+    if err:
+      return
+    if timeline_message_id is None:
       return
 
-    timeline_channel_id = await crud.get_timeline_channel_id(message.guild.id)
-    if not timeline_channel_id:
+    timeline_channel_id, err = await crud.get_timeline_channel_id(message.guild.id)
+    if err:
+      return
+
+    if timeline_channel_id is None:
+      logger.warning('timelineチャンネルが登録されていません。timelineチャンネルで`/timeline`コマンドを使用してください。')
       return
 
     timeline_channel = self.bot.get_channel(timeline_channel_id)
+    assert isinstance(timeline_channel, discord.TextChannel)
+
     timeline_message = await timeline_channel.fetch_message(timeline_message_id)
     await timeline_message.delete()
 
-    await crud.del_timeline(message.id)
+    err = await crud.delete_timeline(message.id)
+    if err:
+      return
 
-    print('delete event completed')
+    logger.info('on_message_delete completed')
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(Timeline(bot))

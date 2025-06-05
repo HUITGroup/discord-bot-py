@@ -1,4 +1,4 @@
-import os
+import logging
 from datetime import date, time
 from datetime import datetime as dt
 from datetime import timedelta as td
@@ -24,13 +24,14 @@ from utils.constants import (
 
 ABS = Path(__file__).resolve().parents[3]
 load_dotenv(ABS / '.env')
+logger = logging.getLogger('huitLogger')
 
 JST = tz(td(hours=9), 'JST')
 
 START = time(hour=9, tzinfo=JST)
 
-print(START.tzinfo)
-print(START)
+# print(START.tzinfo)
+logger.info(f'入部期間チェックは毎日 {START} に行われます。')
 
 class MemberJoin(commands.Cog):
   def __init__(self, bot: commands.Bot):
@@ -91,7 +92,7 @@ class MemberJoin(commands.Cog):
     else:
       category = discord.utils.get(guild.categories, name=category_name)
       channel = guild.get_channel(user.channel_id)
-      assert channel is not None
+      assert isinstance(channel, discord.TextChannel)
       await channel.edit(category=category)
 
   @app_commands.command(name='link_member_role', description='指定年度のmemberロールと紐付けるコマンドです')
@@ -135,9 +136,9 @@ class MemberJoin(commands.Cog):
     await channel.edit(name=f'times_{name}')
 
     if isinstance(you, str):
-      msg = f'変更しました。変わっていない場合はdiscordを再起動するか，お近くの{you}までお知らせください'
+      msg = f'変更しました。変わっていない場合はdiscordを再起動するか、お近くの{you}までお知らせください'
     else:
-      msg = f'変更しました。変わっていない場合はdiscordを再起動するか，お近くの{you.mention}までお知らせください'
+      msg = f'変更しました。変わっていない場合はdiscordを再起動するか、お近くの{you.mention}までお知らせください'
     await interactions.response.send_message(msg)
 
   @commands.Cog.listener()
@@ -224,10 +225,10 @@ class MemberJoin(commands.Cog):
 
   @tasks.loop(time=START)
   async def check_deadline(self):
-    print('deadline check has started')
+    logger.info('deadline check has started')
 
     today = dt.now(JST).date()
-    users = await crud.get_users_by_deadline(today)
+    users = await crud.get_users_by_deadline(today-td(days=1))
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
@@ -243,7 +244,7 @@ class MemberJoin(commands.Cog):
     for user in users:
       discord_user = guild.get_member(user.user_id)
       if discord_user is None:
-        print(f'[Warning]: user with {user.user_id=} is not found')
+        logger.warning(f'{user.user_id=} のユーザーが見つかりませんでした。すでに退会したユーザーの可能性があります。')
         continue
 
       await discord_user.remove_roles(role)
@@ -255,7 +256,7 @@ class MemberJoin(commands.Cog):
 
   @tasks.loop(time=START)
   async def check_near_deadline(self):
-    print('deadline check 2 has started')
+    logger.info('near deadline check has started')
 
     deadline = (dt.now(JST) + td(days=7)).date()
     users = await crud.get_users_by_deadline(deadline)
@@ -271,23 +272,13 @@ class MemberJoin(commands.Cog):
     for user in users:
       discord_user = guild.get_member(user.user_id)
       if discord_user is None:
-        print(f'[Warning]: user with {user.user_id=} is not found. In check_near_deadline.')
+        logger.warning(f'{user.user_id=} のユーザーが見つかりませんでした。すでに退会したユーザーの可能性があります。')
         continue
 
       msg = f"{discord_user.mention} さんの体験入部期間はあと 7日 で終了します。本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
 
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)
-
-  @check_deadline.error
-  async def check_deadline_error(ctx: commands.Context, error):
-    print(error)
-    print(ctx)
-
-  @check_near_deadline.error
-  async def check_near_deadline_error(ctx: commands.Context, error):
-    print(error)
-    print(ctx)
 
 async def setup(bot: commands.Bot):
   cog = MemberJoin(bot)
