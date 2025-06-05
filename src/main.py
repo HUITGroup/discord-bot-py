@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from api import start_web_server
 from bot import bot
 from db.database import init_models
+from utils.loggers import DiscordHandler
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'log'
@@ -33,6 +34,16 @@ with open(ABS / 'configs' / 'log_config.yaml') as f:
   log_config = yaml.safe_load(f)
 
 logging.config.dictConfig(log_config)
+
+discord_handler = DiscordHandler(bot)
+discord_handler.setLevel(logging.WARNING)
+discord_handler.setFormatter(logging.Formatter(
+  "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
+))
+
+for name in ['huitLogger', 'same_hierarchy', 'lower.sub']:
+  logger = logging.getLogger(name)
+  logger.addHandler(discord_handler)
 
 async def main():
   await init_models()

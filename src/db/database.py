@@ -5,7 +5,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import (
-  AsyncSession,
   async_sessionmaker,
   create_async_engine,
 )
@@ -20,7 +19,13 @@ MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 MYSQL_ADDRESS = os.getenv("MYSQL_ADDRESS")
 MYSQL_PORT = os.getenv("MYSQL_PORT")
 
-assert all([MYSQL_USER, MYSQL_PASSWORD, MYSQL_ADDRESS, MYSQL_PORT, MYSQL_DATABASE]), f'MySQL関連の環境変数がNoneです\n{MYSQL_USER=}\n{MYSQL_PASSWORD=}\n{MYSQL_DATABASE=}\n{MYSQL_ADDRESS=}\n{MYSQL_PORT=}\n'
+assert all([
+  MYSQL_USER,
+  MYSQL_PASSWORD,
+  MYSQL_ADDRESS,
+  MYSQL_PORT,
+  MYSQL_DATABASE
+  ]), f'MySQL関連の環境変数がNoneです\n{MYSQL_USER=}\n{MYSQL_PASSWORD=}\n{MYSQL_DATABASE=}\n{MYSQL_ADDRESS=}\n{MYSQL_PORT=}\n'
 
 DATABASE_URL = (
   f"mysql+asyncmy://{MYSQL_USER}:{MYSQL_PASSWORD}"

@@ -12,11 +12,6 @@ handlers:
     formatter: standard
     stream: ext://sys.stdout
 
-  huitHandler:
-    class: utils.loggers.DiscordHandler
-    level: WARNING
-    formatter: standard
-
   fileHandler:
     class: logging.FileHandler
     level: DEBUG
@@ -28,19 +23,19 @@ handlers:
 loggers:
   huitLogger:
     level: DEBUG
-    handlers: [consoleHandler, huitHandler, fileHandler]
+    handlers: [consoleHandler, fileHandler]
     propagate: false
 
   same_hierarchy:
     level: DEBUG
-    handlers: [consoleHandler, huitHandler, fileHandler]
+    handlers: [consoleHandler, fileHandler]
     propagate: false
 
   lower.sub:
     level: DEBUG
-    handlers: [consoleHandler, huitHandler, fileHandler]
+    handlers: [consoleHandler, fileHandler]
     propagate: false
 
 root:
   level: INFO
-  handlers: [console]
+  handlers: [consoleHandler]

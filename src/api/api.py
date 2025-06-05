@@ -26,7 +26,7 @@ load_dotenv(ABS / '.env')
 
 HMAC_KEY_STR = os.getenv('HMAC_KEY')
 if HMAC_KEY_STR is None:
-  raise NotImplementedError()
+  raise NotImplementedError(f'環境変数HMAC_KEYがセットされていません\n{HMAC_KEY_STR=}')
 HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
