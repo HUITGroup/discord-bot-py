@@ -1,5 +1,6 @@
 """botインスタンス定義部分"""
 
+import logging
 import os
 from pathlib import Path
 
@@ -20,9 +21,11 @@ activity = discord.Activity(name="/help", type=discord.ActivityType.playing)
 
 bot = commands.Bot("some_prefix", intents=intents, activity=activity)
 
+logger = logging.getLogger('huitLogger')
+
 @bot.event
 async def on_ready():  # noqa: D103
   synced = await bot.tree.sync()
-  print(synced)
+  # logger.info(synced)
 
-  print(f"Logged in as {bot.user.name}")
+  logger.info(f"Logged in as {bot.user.name}")

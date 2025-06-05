@@ -27,7 +27,9 @@ load_dotenv(ABS / '.env')
 
 HMAC_KEY_STR = os.getenv('HMAC_KEY')
 if HMAC_KEY_STR is None:
-  raise NotImplementedError(f'環境変数HMAC_KEYがセットされていません\n{HMAC_KEY_STR=}')
+  raise NotImplementedError(
+    f'環境変数HMAC_KEYがセットされていません\n{HMAC_KEY_STR=}'
+  )
 HMAC_KEY = HMAC_KEY_STR.encode('utf-8')
 
 ALLOWED_TIMESTAMP_DIFF = 300
@@ -55,7 +57,7 @@ async def submission(request: Request):
 
   user, err = await crud.get_user_by_username(data.username)
   if err:
-    logger.error(f'ユーザーの検索処理が異常終了しました')
+    logger.error('ユーザーの検索処理が異常終了しました')
     return web.json_response({"error": "internal server error"}, status=500)
 
   cog = bot.get_cog('MemberJoin')
@@ -64,15 +66,15 @@ async def submission(request: Request):
 
   if user is None:
     # nicknameが被っているかどうかの処理
-    err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
     await cog.check_already_in_server(data.username)
   elif user.channel_id is None:
     # nicknameが被っているかどうかの処理
-    err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
     await cog.check_already_in_server(data.username)
   else:
     # 学年更新処理のみ
-    err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
 
   if err:
     logger.error('ユーザーの事前登録処理が異常終了しました')
@@ -107,7 +109,10 @@ async def grant_member_role(request: Request):
   return web.Response(text='ok')
 
 @web.middleware
-async def hmac_auth_middleware(request: Request, handler: Callable[[web.Request], Awaitable[web.Response]]) -> Response:
+async def hmac_auth_middleware(
+  request: Request,
+  handler: Callable[[web.Request], Awaitable[web.Response]]
+) -> Response:
   try:
     raw_body = await request.json()
     body = BaseRequest(**raw_body)
@@ -125,7 +130,10 @@ async def hmac_auth_middleware(request: Request, handler: Callable[[web.Request]
       raise ValueError("Invalid signature")
 
   except Exception as e:
-    return web.json_response({"error": "Unauthorized", "reason": str(e)}, status=401)
+    return web.json_response(
+      {"error": "Unauthorized", "reason": str(e)},
+      status=401
+    )
 
   db_year, err = await crud.get_member_role_year(GUILD_ID)
   if err:
@@ -154,6 +162,5 @@ async def start_web_server():
   runner = web.AppRunner(app)
   await runner.setup()
   site = web.TCPSite(runner, "0.0.0.0", 8000)
-  print('------------------------------------------------'*2)
   await site.start()
-  print('server booted')
+  logger.info('server booted')

@@ -65,7 +65,12 @@ class MemberJoin(commands.Cog):
     if discord_user:
       await self.on_member_join(discord_user)
 
-  async def _prepare_channel(self, member: discord.Member, user: UserData, raw_limit_day: date) -> None:
+  async def _prepare_channel(
+    self,
+    member: discord.Member,
+    user: UserData,
+    raw_limit_day: date
+  ) -> None:
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
@@ -88,7 +93,12 @@ class MemberJoin(commands.Cog):
       await channel.send(
         f'{member.mention}\ntimesを作成しました！\ntimesについての詳細はこちら→{message.jump_url}'
       )
-      err = await crud.register_user(member.name, member.id, channel.id, raw_limit_day)
+      _, err = await crud.register_user(
+        member.name,
+        member.id,
+        channel.id,
+        raw_limit_day
+      )
       if err:
         logger.error('ユーザーの本登録処理が異常終了しました')
     else:
@@ -97,7 +107,10 @@ class MemberJoin(commands.Cog):
       assert isinstance(channel, discord.TextChannel)
       await channel.edit(category=category)
 
-  @app_commands.command(name='link_member_role', description='指定年度のmemberロールと紐付けるコマンドです')
+  @app_commands.command(
+    name='link_member_role',
+    description='指定年度のmemberロールと紐付けるコマンドです'
+  )
   @app_commands.checks.has_permissions(administrator=True)
   async def link_member_role(self, interaction: discord.Interaction, year: int):
     guild = self.bot.get_guild(GUILD_ID)
@@ -105,17 +118,22 @@ class MemberJoin(commands.Cog):
 
     role = discord.utils.get(guild.roles, name=f'member-{year}')
     if role is None:
-      await interaction.response.send_message(f'member-{year}ロールが見つかりません．member-{year}ロールが存在することを確認してください')
+      await interaction.response.send_message(
+        f'member-{year}ロールが見つかりません．member-{year}ロールが存在することを確認してください'
+      )
       return
 
     member_role_id = role.id
-    err = await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
+    _, err = await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
     if err:
       return
 
-    await interaction.response.send_message(f'紐付けが完了しました')
+    await interaction.response.send_message('紐付けが完了しました')
 
-  @app_commands.command(name='rename', description='自分のtimesの名前を変更するコマンドです')
+  @app_commands.command(
+    name='rename',
+    description='自分のtimesの名前を変更するコマンドです'
+  )
   async def rename(self, interactions: discord.Interaction, name: str):
     channel_id, err = await crud.get_channel_id_by_user_id(interactions.user.id)
     if err:
@@ -143,9 +161,11 @@ class MemberJoin(commands.Cog):
     await channel.edit(name=f'times_{name}')
 
     if isinstance(you, str):
-      msg = f'変更しました。変わっていない場合はdiscordを再起動するか、お近くの{you}までお知らせください'
+      msg = '変更しました。変わっていない場合はdiscordを再起動するか、お近くの'\
+        f'{you}までお知らせください'
     else:
-      msg = f'変更しました。変わっていない場合はdiscordを再起動するか、お近くの{you.mention}までお知らせください'
+      msg = '変更しました。変わっていない場合はdiscordを再起動するか、'\
+        f'お近くの{you.mention}までお知らせください'
     await interactions.response.send_message(msg)
 
   @commands.Cog.listener()
@@ -159,7 +179,12 @@ class MemberJoin(commands.Cog):
       return
 
     if user is None:
-      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。フォームに入力した「Discord の ID」が実際のものと一致しているか確認してください。\nフォームに誤りがあった場合はフォームを編集し、正しいものに修正してください。\nhttps://forms.gle/7xzSLV9xvpciJoJYA\nわからない点があれば `@moderator` までご連絡ください。'
+      msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。'\
+        'フォームに入力した「Discord の ID」が実際のものと一致しているか'\
+        '確認してください。\nフォームに誤りがあった場合はフォームを編集し、'\
+        '正しいものに修正してください。\n'\
+        'https://forms.gle/7xzSLV9xvpciJoJYA\nわからない点があれば'\
+        '`@moderator` までご連絡ください。'
       await member.guild.system_channel.send(msg)
       return
 
@@ -201,7 +226,7 @@ class MemberJoin(commands.Cog):
 
   @commands.Cog.listener()
   async def on_member_leave(self, member: discord.Member):
-    err = await crud.delete_user(member.id)
+    _, err = await crud.delete_user(member.id)
     if err:
       logger.error('ユーザーの削除処理が異常終了しました')
 
@@ -258,12 +283,16 @@ class MemberJoin(commands.Cog):
     for user in users:
       discord_user = guild.get_member(user.user_id)
       if discord_user is None:
-        logger.warning(f'{user.user_id=} のユーザーが見つかりませんでした。すでに退会したユーザーの可能性があります。')
+        logger.info(
+          f'{user.user_id=} のユーザーが見つかりませんでした。'\
+            'すでに退会したユーザーの可能性があります。'
+        )
         continue
 
       await discord_user.remove_roles(role)
 
-      msg = f"{discord_user.mention} さんの体験入部期間が終了しました。本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
+      msg = f"{discord_user.mention} さんの体験入部期間が終了しました。"\
+        f"本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
 
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)
@@ -288,10 +317,14 @@ class MemberJoin(commands.Cog):
     for user in users:
       discord_user = guild.get_member(user.user_id)
       if discord_user is None:
-        logger.warning(f'{user.user_id=} のユーザーが見つかりませんでした。すでに退会したユーザーの可能性があります。')
+        logger.info(
+          f'{user.user_id=} のユーザーが見つかりませんでした。'\
+            'すでに退会したユーザーの可能性があります。'
+        )
         continue
 
-      msg = f"{discord_user.mention} さんの体験入部期間はあと 7日 で終了します。本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
+      msg = f"{discord_user.mention} さんの体験入部期間はあと 7日 で終了します。"\
+        f"本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
 
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)

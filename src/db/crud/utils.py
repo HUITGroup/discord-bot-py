@@ -13,7 +13,9 @@ logger = logging.getLogger('huitLogger')
 P = ParamSpec("P")
 T = TypeVar("T")
 
-def err_handler(func: Callable[Concatenate[AsyncSession, P], Awaitable[T]]) -> Callable[P, Awaitable[tuple[T|None, bool]]]:
+def err_handler(
+  func: Callable[Concatenate[AsyncSession, P], Awaitable[T]]
+) -> Callable[P, Awaitable[tuple[T|None, bool]]]:
   """crud操作系の関数にエラーハンドリングを追加するデコレーターです
 
   Args:

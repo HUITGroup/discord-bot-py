@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.crud.utils import err_handler
-from src.db.models import MemberRole
+from db.crud.utils import err_handler
+from db.models import MemberRole
 
 
 @err_handler

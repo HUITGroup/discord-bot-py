@@ -13,7 +13,11 @@ class TestLog(commands.Cog):
   @app_commands.command(name='test_log', description='test')
   @app_commands.checks.has_permissions(administrator=True)
   async def test_log(self, interaction: discord.Interaction):
-    logger.info('This is the test log.')
+    logger.info('This is the info log.')
+    logger.warning('This is the warning log.')
+    logger.error('This is the error log.')
+    logger.fatal('This is the fatal log.')
+    logger.critical('This is the critical log.')
 
     await interaction.response.send_message('（＾ω＾）')
 

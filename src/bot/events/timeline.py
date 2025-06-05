@@ -30,7 +30,7 @@ class Timeline(commands.Cog):
 
     assert interaction.channel_id is not None
 
-    err = await crud.register_timeline_channel(
+    _, err = await crud.register_timeline_channel(
       interaction.guild_id, interaction.channel_id
     )
     if err:
@@ -96,7 +96,7 @@ class Timeline(commands.Cog):
       embed=embed,
     )
 
-    err = await crud.register_message(timeline_message.id, message.id)
+    _, err = await crud.register_message(timeline_message.id, message.id)
     if err:
       return
 
@@ -162,7 +162,7 @@ class Timeline(commands.Cog):
     timeline_message = await timeline_channel.fetch_message(timeline_message_id)
     await timeline_message.delete()
 
-    err = await crud.delete_timeline(message.id)
+    _, err = await crud.delete_timeline(message.id)
     if err:
       return
 

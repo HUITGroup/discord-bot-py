@@ -13,7 +13,7 @@ from db.database import init_models
 from utils.loggers import DiscordHandler
 
 ABS = Path(__file__).resolve().parents[1]
-LOG = ABS / 'log'
+LOG = ABS / 'logs'
 LOG.mkdir(exist_ok=True)
 load_dotenv(ABS / '.env')
 
