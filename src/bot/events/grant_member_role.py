@@ -45,7 +45,7 @@ class GrantMemberRole(commands.Cog):
     await discord_user.add_roles(member_role)
     await discord_user.remove_roles(guest_role, deadline_role)
 
-    err = await crud.reset_deadline(username)
+    _, err = await crud.reset_deadline(username)
     if err:
       logger.error('体験入部期間の期日のリセット処理が異常終了しました')
 
