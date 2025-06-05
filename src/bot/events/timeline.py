@@ -16,9 +16,12 @@ class Timeline(commands.Cog):
   def __init__(self, bot: commands.Bot):
     self.bot = bot
 
-  @app_commands.command(name='timeline', description='このコマンドを実行したチャンネルを新しくtimelineチャンネルとして登録します。むやみに実行しないでください。')
+  @app_commands.command(
+    name='timeline',
+    description='このコマンドを実行したチャンネルを新しくtimelineチャンネルとして登録します。むやみに実行しないでください。'
+  )
   @app_commands.checks.has_permissions(administrator=True)
-  async def timeline(self, interaction: discord.Interaction):
+  async def timeline(self, interaction: discord.Interaction):  # noqa: D102
     if self.bot.user.id == interaction.user.id:
       return
 
@@ -27,11 +30,15 @@ class Timeline(commands.Cog):
 
     assert interaction.channel_id is not None
 
-    err = await crud.register_timeline_channel(interaction.guild_id, interaction.channel_id)
+    err = await crud.register_timeline_channel(
+      interaction.guild_id, interaction.channel_id
+    )
     if err:
       return
 
-    await interaction.response.send_message('このチャンネルを新しくtimelineチャンネルとして登録しました')
+    await interaction.response.send_message(
+      'このチャンネルを新しくtimelineチャンネルとして登録しました'
+    )
 
   def _create_embed(self, message: discord.Message) -> discord.Embed:
     embed = discord.Embed(
@@ -61,7 +68,7 @@ class Timeline(commands.Cog):
     return embed
 
   @commands.Cog.listener()
-  async def on_message(self, message: discord.Message):
+  async def on_message(self, message: discord.Message):  # noqa: D102
     logger.info("on_message called")
 
     channel = message.channel
@@ -84,7 +91,10 @@ class Timeline(commands.Cog):
     timeline_channel = self.bot.get_channel(timeline_channel_id)
     assert isinstance(timeline_channel, discord.TextChannel)
 
-    timeline_message = await timeline_channel.send(content=message.jump_url, embed=embed)
+    timeline_message = await timeline_channel.send(
+      content=message.jump_url,
+      embed=embed,
+    )
 
     err = await crud.register_message(timeline_message.id, message.id)
     if err:
@@ -93,7 +103,11 @@ class Timeline(commands.Cog):
     logger.info('on_message completed')
 
   @commands.Cog.listener()
-  async def on_message_edit(self, before: discord.Message, after: discord.Message):
+  async def on_message_edit(  # noqa: D102
+    self,
+    before: discord.Message,
+    after: discord.Message
+  ):
     logger.info('on_message_edit called')
 
     timeline_message_id, err = await crud.get_timeline_message_id(before.id)
@@ -125,7 +139,7 @@ class Timeline(commands.Cog):
     print('on_message_edit completed')
 
   @commands.Cog.listener()
-  async def on_message_delete(self, message: discord.Message):
+  async def on_message_delete(self, message: discord.Message):  # noqa: D102
     logger.info('on_message_delete called')
 
     timeline_message_id, err = await crud.get_timeline_message_id(message.id)
@@ -154,5 +168,5 @@ class Timeline(commands.Cog):
 
     logger.info('on_message_delete completed')
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):  # noqa: D103
   await bot.add_cog(Timeline(bot))

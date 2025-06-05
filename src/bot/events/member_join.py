@@ -88,7 +88,9 @@ class MemberJoin(commands.Cog):
       await channel.send(
         f'{member.mention}\ntimesを作成しました！\ntimesについての詳細はこちら→{message.jump_url}'
       )
-      await crud.register_user(member.name, member.id, channel.id, raw_limit_day)
+      err = await crud.register_user(member.name, member.id, channel.id, raw_limit_day)
+      if err:
+        logger.error('ユーザーの本登録処理が異常終了しました')
     else:
       category = discord.utils.get(guild.categories, name=category_name)
       channel = guild.get_channel(user.channel_id)
@@ -107,13 +109,18 @@ class MemberJoin(commands.Cog):
       return
 
     member_role_id = role.id
-    await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
+    err = await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
+    if err:
+      return
 
     await interaction.response.send_message(f'紐付けが完了しました')
 
   @app_commands.command(name='rename', description='自分のtimesの名前を変更するコマンドです')
   async def rename(self, interactions: discord.Interaction, name: str):
-    channel_id = await crud.get_channel_id_by_user_id(interactions.user.id)
+    channel_id, err = await crud.get_channel_id_by_user_id(interactions.user.id)
+    if err:
+      return
+
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
@@ -147,7 +154,10 @@ class MemberJoin(commands.Cog):
     if member.bot or self.bot.user.id == member.id:
       return
 
-    user = await crud.get_user_by_username(member.name)
+    user, err = await crud.get_user_by_username(member.name)
+    if err:
+      return
+
     if user is None:
       msg = f'{member.mention}さんのフォーム入力情報を確認できませんでした。フォームに入力した「Discord の ID」が実際のものと一致しているか確認してください。\nフォームに誤りがあった場合はフォームを編集し、正しいものに修正してください。\nhttps://forms.gle/7xzSLV9xvpciJoJYA\nわからない点があれば `@moderator` までご連絡ください。'
       await member.guild.system_channel.send(msg)
@@ -191,7 +201,9 @@ class MemberJoin(commands.Cog):
 
   @commands.Cog.listener()
   async def on_member_leave(self, member: discord.Member):
-    await crud.delete_user(member.id)
+    err = await crud.delete_user(member.id)
+    if err:
+      logger.error('ユーザーの削除処理が異常終了しました')
 
   @commands.Cog.listener()
   async def on_member_update(self, before: discord.Member, after: discord.Member):
@@ -207,12 +219,11 @@ class MemberJoin(commands.Cog):
     member_role = discord.utils.find(lambda role: 'member' in role.name, roles)
     guest_role = discord.utils.get(roles, id=GUEST_ROLE_ID)
 
-    print(member_role is None)
-    print(guest_role is None)
-
     if member_role is None and guest_role is None:
       user_id = after.id
-      channel_id = await crud.get_channel_id_by_user_id(user_id)
+      channel_id, err = await crud.get_channel_id_by_user_id(user_id)
+      if err:
+        return
       assert channel_id is not None
 
       channel = guild.get_channel(channel_id)
@@ -228,7 +239,10 @@ class MemberJoin(commands.Cog):
     logger.info('deadline check has started')
 
     today = dt.now(JST).date()
-    users = await crud.get_users_by_deadline(today-td(days=1))
+    users, err = await crud.get_users_by_deadline(today-td(days=1))
+    if err:
+      logger.error('check_deadlineが異常終了しました')
+
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
@@ -259,7 +273,9 @@ class MemberJoin(commands.Cog):
     logger.info('near deadline check has started')
 
     deadline = (dt.now(JST) + td(days=7)).date()
-    users = await crud.get_users_by_deadline(deadline)
+    users, err = await crud.get_users_by_deadline(deadline)
+    if err:
+      logger.error('check_near_deadlineが異常終了しました')
     if not users:
       return
 
