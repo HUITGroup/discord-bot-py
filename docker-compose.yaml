@@ -1,8 +1,10 @@
 services:
   db:
     image: mysql:8.0
+    container_name: huit-db
     restart: always
     env_file: .env
+    tty: true
     ports:
       - ${MYSQL_PORT}:3306
     volumes:
@@ -19,6 +21,7 @@ services:
       start_period: 10s
 
   huit-bot:
+    container_name: huit-bot
     depends_on:
       db:
         condition: service_healthy
@@ -27,5 +30,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    tty: true
     restart: always
     env_file: .env
