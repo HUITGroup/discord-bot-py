@@ -19,6 +19,8 @@ services:
       interval: 5s
       retries: 10
       start_period: 10s
+    networks:
+      - webnet
 
   huit-bot:
     container_name: huit-bot
