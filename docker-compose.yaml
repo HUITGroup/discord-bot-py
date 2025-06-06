@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./src:/app/src
+      - .:/app
     tty: true
     restart: always
     env_file: .env
