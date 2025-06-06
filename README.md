@@ -2,6 +2,7 @@
 ## 備忘録
 > Exception: Can not find valid pkg-config name.
 > Specify MYSQLCLIENT_CFLAGS and MYSQLCLIENT_LDFLAGS env vars manually
+
 って出て`mysqlclient`が入らない場合の対処
 ```
 sudo apt install libmysqlclient-dev
