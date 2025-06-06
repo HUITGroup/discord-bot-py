@@ -12,5 +12,7 @@ RUN sh /uv-installer.sh && rm /uv-installer.sh
 # Ensure the installed binary is on the `PATH`
 ENV PATH="/root/.local/bin/:$PATH"
 
+WORKDIR /app
+
 RUN uv sync
 CMD ["uv", "run", "src/main.py"]
