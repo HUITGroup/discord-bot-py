@@ -36,49 +36,6 @@ class CheckRole(commands.Cog):
   def __init__(self, bot: commands.Bot):
     self.bot = bot
 
-  @app_commands.command(name='check_guest_role', description='test')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def check_guest_role(self, interaction: discord.Interaction):
-    guild = self.bot.get_guild(GUILD_ID)
-    role = guild.get_role(GUEST_ROLE_ID)
-
-    user = guild.get_member(MY_ID)
-    print(role)
-
-    await interaction.response.send_message('done')
-
-  @app_commands.command(name='grant_guest_role', description='misaizuにguestロールを付与するコマンド')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def grant_guest_role(self, interaction: discord.Interaction):
-    guild = self.bot.get_guild(GUILD_ID)
-    role = guild.get_role(GUEST_ROLE_ID)
-
-    user = guild.get_member(MY_ID)
-    print(user)
-    await user.add_roles(role)
-
-    await interaction.response.send_message('granted')
-
-  @app_commands.command(name='revoke_guest_role', description='期限切れのguestロールを一斉剥奪するコマンド')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def revoke_guest_role(self, interaction: discord.Interaction):
-    print('deadline check has started')
-
-    user_ids = [MY_ID]
-
-    guild = self.bot.get_guild(GUILD_ID)
-    role = guild.get_role(GUEST_ROLE_ID)
-    welcome_channel = guild.get_channel(1228918335933124628)
-    info_channel = guild.get_channel(1228918335933124628)
-
-    for user_id in user_ids:
-      user = guild.get_member(user_id)
-      await user.remove_roles(role)
-
-      msg = f"{user.mention} さんの体験入部期間が終了しました。本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
-
-      await welcome_channel.send(msg)
-
   @app_commands.command(name='sync_user_data', description='サーバーにいる全員のuser dataを同期するコマンド(試験運用)')
   @app_commands.checks.has_permissions(administrator=True)
   async def sync_user_data(self, interaction: discord.Interaction):
@@ -90,49 +47,6 @@ class CheckRole(commands.Cog):
     await crud.csv_to_sql(df)
 
     await interaction.response.send_message('running...')
-
-  @app_commands.command(name='grant_grade_roles', description='a')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def grant_grade_roles(self, interaction: discord.Interaction):
-    users = await crud.get_all_users()
-    guild = self.bot.get_guild(GUILD_ID)
-
-    for user in users:
-      # if user.nickname != 'takemura':
-      if user.grade == 'other' or user.grade is None:
-        continue
-
-      role = guild.get_role(roles[user.grade])
-      discord_user = guild.get_member(user.user_id)
-
-      if discord_user is not None:
-        await discord_user.add_roles(role)
-
-    await interaction.response.send_message('done.')
-
-  @app_commands.command(name='revoke_outdated_guests', description='guestロール一括剥奪')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def revoke_outdated_guests(self, interaction: discord.Interaction):
-    today = dt.now(JST).date()
-    users = await crud.get_users_by_deadline(today)
-
-    guild = self.bot.get_guild(GUILD_ID)
-    guest_role = guild.get_role(GUEST_ROLE_ID)
-
-    await interaction.response.send_message('running...')
-    for user in users:
-      if user.deadline is None:
-        continue
-
-      print(type(user.username))
-      discord_user = guild.get_member(user.user_id)
-      if discord_user:
-        print('aaaaaa')
-        try:
-          await discord_user.remove_roles(guest_role)
-        except Exception as e:
-          print(e)
-
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(CheckRole(bot))
