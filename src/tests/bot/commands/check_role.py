@@ -37,6 +37,7 @@ class CheckRole(commands.Cog):
     self.bot = bot
 
   @app_commands.command(name='check_guest_role', description='test')
+  @app_commands.checks.has_permissions(administrator=True)
   async def check_guest_role(self, interaction: discord.Interaction):
     guild = self.bot.get_guild(GUILD_ID)
     role = guild.get_role(GUEST_ROLE_ID)
@@ -47,6 +48,7 @@ class CheckRole(commands.Cog):
     await interaction.response.send_message('done')
 
   @app_commands.command(name='grant_guest_role', description='misaizuにguestロールを付与するコマンド')
+  @app_commands.checks.has_permissions(administrator=True)
   async def grant_guest_role(self, interaction: discord.Interaction):
     guild = self.bot.get_guild(GUILD_ID)
     role = guild.get_role(GUEST_ROLE_ID)
@@ -58,6 +60,7 @@ class CheckRole(commands.Cog):
     await interaction.response.send_message('granted')
 
   @app_commands.command(name='revoke_guest_role', description='期限切れのguestロールを一斉剥奪するコマンド')
+  @app_commands.checks.has_permissions(administrator=True)
   async def revoke_guest_role(self, interaction: discord.Interaction):
     print('deadline check has started')
 
@@ -77,6 +80,7 @@ class CheckRole(commands.Cog):
       await welcome_channel.send(msg)
 
   @app_commands.command(name='sync_user_data', description='サーバーにいる全員のuser dataを同期するコマンド(試験運用)')
+  @app_commands.checks.has_permissions(administrator=True)
   async def sync_user_data(self, interaction: discord.Interaction):
     if interaction.user.nick != 'misaizu':
       interaction.response.send_message('misaizuにしか実行できない設定にしてあります')
@@ -88,6 +92,7 @@ class CheckRole(commands.Cog):
     await interaction.response.send_message('running...')
 
   @app_commands.command(name='grant_grade_roles', description='a')
+  @app_commands.checks.has_permissions(administrator=True)
   async def grant_grade_roles(self, interaction: discord.Interaction):
     users = await crud.get_all_users()
     guild = self.bot.get_guild(GUILD_ID)
@@ -106,6 +111,7 @@ class CheckRole(commands.Cog):
     await interaction.response.send_message('done.')
 
   @app_commands.command(name='revoke_outdated_guests', description='guestロール一括剥奪')
+  @app_commands.checks.has_permissions(administrator=True)
   async def revoke_outdated_guests(self, interaction: discord.Interaction):
     today = dt.now(JST).date()
     users = await crud.get_users_by_deadline(today)
