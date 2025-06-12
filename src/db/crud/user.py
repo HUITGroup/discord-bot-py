@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Literal
 
+import pandas as pd
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -183,4 +184,10 @@ async def delete_user(session: AsyncSession, user_id: int):
   await session.execute(
     delete(UserData).where(UserData.user_id == user_id)
   )
+  await session.commit()
+
+@err_handler
+async def csv_to_sql(session: AsyncSession, df: pd.DataFrame):
+  objs = [UserData(**row) for row in df.to_dict(orient='records')]
+  session.add_all(objs)
   await session.commit()
