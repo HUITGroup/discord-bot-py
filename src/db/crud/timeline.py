@@ -17,7 +17,7 @@ async def get_timeline_channel_id(session: AsyncSession, guild_id: int) -> int|N
     int|None: timelineチャンネルのchannel id。登録されていない場合はNone
   """
   result = await session.get(TimelineChannel, guild_id)
-  await session.commit()
+  # await session.commit()
 
   if result is None:
     return None
@@ -43,7 +43,7 @@ async def get_timeline_message_id(
       TimelineMessage.original_message_id == original_message_id
     )
   )
-  await session.commit()
+  # await session.commit()
   message = result.scalar_one_or_none()
 
   if message is None:

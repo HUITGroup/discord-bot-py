@@ -11,7 +11,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from db import crud
-from utils.constants import GUEST_ROLE_ID, GUILD_ID
+from utils.constants import ARCHIVED_CATEGORY_ID, GUEST_ROLE_ID, GUILD_ID
 
 JST = tz(td(hours=9), 'JST')
 
@@ -41,10 +41,24 @@ class CheckRole(commands.Cog):
   async def sync_user_data(self, interaction: discord.Interaction):
     if interaction.user.nick != 'misaizu':
       await interaction.response.send_message('misaizuにしか実行できない設定にしてあります')
+      return
 
     df = pd.read_csv(ABS / 'map.csv')
     df = df.where(pd.notnull(df), None)
     await crud.csv_to_sql(df)
+
+    await interaction.response.send_message('running...')
+
+  @app_commands.command(name='sync_user_data2', description='サーバーにいる全員のuser dataを同期するコマンド(試験運用)2')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def sync_user_data(self, interaction: discord.Interaction):
+    if interaction.user.nick != 'misaizu':
+      await interaction.response.send_message('misaizuにしか実行できない設定にしてあります')
+      return
+
+    df = pd.read_csv(ABS / 'map.csv')
+    df = df.where(pd.notnull(df), None)
+    await crud.csv_to_sql_each_row(df)
 
     await interaction.response.send_message('running...')
 
@@ -58,6 +72,73 @@ class CheckRole(commands.Cog):
 
     channel = guild.get_channel(1225392486743146526)
     print(channel.name)
+
+  @app_commands.command(name='archive', description='archive')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def archive(self, interaction: discord.Interaction):
+    if interaction.user.nick != 'misaizu':
+      await interaction.response.send_message('null')
+      return
+
+    private_categories = {
+      "TIMES B1",
+      "TIMES B2",
+      "TIMES B3",
+      "TIMES B4",
+      "TIMES AFTER B4",
+      "TIMES B5",
+      "TIMES B6",
+      "TIMES M/D",
+      "TIMES other",
+    }
+
+    await interaction.response.send_message('（＾ω＾）')
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    archive_category = discord.utils.get(guild.categories, id=ARCHIVED_CATEGORY_ID)
+    assert archive_category is not None
+
+    edited: list[str] = []
+    for category in guild.categories:
+      if category.name not in private_categories:
+        continue
+
+      for channel in category.channels:
+        if not isinstance(channel, discord.TextChannel):
+          continue
+
+        user, err = await crud.get_user_by_channel_id(channel.id)
+        if err:
+          return
+        if user is None:
+        #   # edited.append(channel.name)
+        #   # print(channel.id)
+        #   await interaction.channel.send(f'WARNING: no user assigned to {channel.name}')
+          continue
+
+        #   await channel.edit(category=archive_category)
+        #   continue
+
+        discord_user = guild.get_member(user.user_id)
+        if discord_user is None:
+          continue
+
+        roles = discord_user.roles
+        if all(discord.utils.get(roles, name=name) is None for name in ['guest', 'member-2024', 'member-2025']):
+          # role_names = [role.name for role in roles]
+          # role_names.pop(0)
+          # await interaction.channel.send(f'{user.username} {user.nickname}')
+
+          # edited.append(channel.name)
+          # continue
+
+          await channel.edit(category=archive_category)
+          await channel.send(f'{channel.name} を archiveしました')
+
+    print(*edited, sep='\n')
+
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(CheckRole(bot))
