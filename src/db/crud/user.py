@@ -69,8 +69,8 @@ async def get_user_by_channel_id(
   """UserDataを紐づいているchannel idから検索します
 
   Args:
-      session (AsyncSession): _description_
-      channel_id (int): channel id
+    session (AsyncSession): _description_
+    channel_id (int): channel id
 
   Returns:
       UserData|None: _description_

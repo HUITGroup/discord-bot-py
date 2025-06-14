@@ -1,6 +1,5 @@
 """party parrotコマンド関連"""
 
-import os
 from pathlib import Path
 
 import discord
