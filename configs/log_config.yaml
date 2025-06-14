@@ -22,17 +22,17 @@ handlers:
 
 loggers:
   textLogger:
-    level: INFO
+    level: DEBUG
     handlers: [consoleHandler, fileHandler]
     propagate: false
 
   discord:
-    level: INFO
+    level: DEBUG
     handlers: [consoleHandler, fileHandler]
     propagate: false
 
   sqlalchemy.engine:
-    level: INFO
+    level: DEBUG
     handlers: [consoleHandler, fileHandler]
 
   huitLogger:

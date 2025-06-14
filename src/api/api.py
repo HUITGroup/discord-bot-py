@@ -45,6 +45,7 @@ def verify_signature(message: str, timestamp: str, signature: str) -> bool:
     return False
 
 async def submission(request: Request):
+  logger.info('フォーム入力を検知しました')
   try:
     raw_data = await request.json()
     data = RegisterData(**json.loads(raw_data['data']))
@@ -80,9 +81,12 @@ async def submission(request: Request):
     logger.error('ユーザーの事前登録処理が異常終了しました')
     return web.json_response({"error": "internal server error"}, status=500)
 
+  logger.info('フォーム入力処理を正常終了しました')
+
   return web.Response(text="ok")
 
 async def grant_member_role(request: Request):
+  logger.info('チェック入れを検知しました')
   try:
     raw_data = await request.json()
     data = GrantRoleData(**json.loads(raw_data['data']))
@@ -100,12 +104,14 @@ async def grant_member_role(request: Request):
   res = await cog.grant_member_role(data.username)
 
   if not res:
+    logger.warning(f'`{data.username}` のユーザーが見つかりませんでした')
     return web.json_response({"error": "user is not found."}, status=404)
 
   err = await cog.manage_channel(data.username)
   if err:
     return web.json_response({"error": "Internal server error"}, status=500)
 
+  logger.info('ロール付与処理を正常終了しました')
   return web.Response(text='ok')
 
 @web.middleware
@@ -129,9 +135,15 @@ async def hmac_auth_middleware(
     if not verify_signature(data, timestamp, signature):
       raise ValueError("Invalid signature")
 
-  except Exception as e:
+  except ValidationError:
     return web.json_response(
-      {"error": "Unauthorized", "reason": str(e)},
+      {"error": "Unauthorized"},
+      status=401,
+    )
+  except Exception as e:
+    logger.error(e)
+    return web.json_response(
+      {"error": "Unauthorized"},
       status=401
     )
 

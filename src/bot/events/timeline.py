@@ -69,14 +69,13 @@ class Timeline(commands.Cog):
 
   @commands.Cog.listener()
   async def on_message(self, message: discord.Message):  # noqa: D102
-    logger.info("on_message called")
-
     channel = message.channel
     if not isinstance(channel, discord.TextChannel):
       return
-
     if not channel.name.startswith("times_"):
       return
+
+    logger.debug("on_message called")
 
     timeline_channel_id, err = await crud.get_timeline_channel_id(message.guild.id)
     if err:
@@ -100,7 +99,7 @@ class Timeline(commands.Cog):
     if err:
       return
 
-    logger.info('on_message completed')
+    logger.debug('on_message completed')
 
   @commands.Cog.listener()
   async def on_message_edit(  # noqa: D102
@@ -108,7 +107,7 @@ class Timeline(commands.Cog):
     before: discord.Message,
     after: discord.Message
   ):
-    logger.info('on_message_edit called')
+    logger.debug('on_message_edit called')
 
     timeline_message_id, err = await crud.get_timeline_message_id(before.id)
     if err:
