@@ -154,6 +154,11 @@ async def hmac_auth_middleware(
       {"error": "Unauthorized"},
       status=401,
     )
+  except json.JSONDecodeError:
+    return web.json_response(
+      {"error": "Unauthorized"},
+      status=401
+    )
   except Exception as e:
     logger.exception(e)
     # logger.warning('An unauthorized access detected')
