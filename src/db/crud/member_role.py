@@ -21,7 +21,9 @@ async def update_member_role_id(
   """
   result = await session.get(MemberRole, guild_id)
   if result is None:
-    session.add(MemberRole(guild_id=guild_id, member_role_id=member_role_id, year=year))
+    session.add(
+      MemberRole(guild_id=guild_id, member_role_id=member_role_id, year=year)
+    )
   else:
     result.member_role_id = member_role_id
     result.year = year
@@ -29,7 +31,10 @@ async def update_member_role_id(
   await session.commit()
 
 @err_handler
-async def get_member_role_year(session: AsyncSession, guild_id: int) -> int|None:
+async def get_member_role_year(
+  session: AsyncSession,
+  guild_id: int
+) -> int|None:
   """現在紐付いているmember roleの年度を取得します
 
   Args:

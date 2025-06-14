@@ -118,7 +118,7 @@ class MemberJoin(commands.Cog):
     role = discord.utils.get(guild.roles, name=f'member-{year}')
     if role is None:
       await interaction.response.send_message(
-        f'member-{year}ロールが見つかりません．member-{year}ロールが存在することを確認してください'
+        f'member-{year}ロールが見つかりません。member-{year}ロールが存在することを確認してください'
       )
       return
 
@@ -328,6 +328,6 @@ class MemberJoin(commands.Cog):
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):  # noqa: D103
   cog = MemberJoin(bot)
   await bot.add_cog(cog)

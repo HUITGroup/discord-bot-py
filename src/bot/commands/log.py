@@ -38,7 +38,9 @@ class Log(commands.Cog):
       if isinstance(handler, DiscordHandler):
         handler.setLevel(level.upper())
 
-    await interaction.response.send_message(f'ログレベルを `{level}` に変更しました')
+    await interaction.response.send_message(
+      f'ログレベルを `{level}` に変更しました'
+    )
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):  # noqa: D103
   await bot.add_cog(Log(bot))

@@ -86,7 +86,7 @@ async def _create(interaction: discord.Interaction, year: str):
     manage_events=True,
   )
 
-  me = guild.get_role(BOT_ROLE_ID) # huit-botロールのIDをここに入れます。変化した場合は環境変数のファイルから適宜変えてください。
+  me = guild.get_role(BOT_ROLE_ID)
   assert me is not None
   role = await guild.create_role(
     name=f'member-{year}',

@@ -29,7 +29,10 @@ class GrantMemberRole(commands.Cog):
     guest_role = guild.get_role(GUEST_ROLE_ID)
     assert guest_role is not None
 
-    deadline_role = discord.utils.find(lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)), guild.roles)
+    deadline_role = discord.utils.find(
+      lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)),
+      guild.roles
+    )
     assert deadline_role is not None
 
     user, err = await crud.get_user_by_username(username)
