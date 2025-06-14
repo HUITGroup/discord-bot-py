@@ -53,7 +53,7 @@ async def submission(request: Request):
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
-    print(e)
+    logger.exception(e)
     return web.json_response({"error": "Internal server error"}, status=500)
 
   user, err = await crud.get_user_by_username(data.username)
@@ -94,7 +94,7 @@ async def grant_member_role(request: Request):
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
-    print(e)
+    logger.exception(e)
     return web.json_response({"error": "Internal server error"}, status=500)
 
   cog = bot.get_cog('GrantMemberRole')
@@ -127,23 +127,21 @@ async def hmac_auth_middleware(
     signature = body.signature
     year = body.year
 
-    # timestampの妥当性チェック
     if abs(time.time() - dt.fromisoformat(timestamp).timestamp()) > ALLOWED_TIMESTAMP_DIFF:
       raise ValueError("Timestamp out of range")
 
-    # HMAC署名チェック
     if not verify_signature(data, timestamp, signature):
       raise ValueError("Invalid signature")
 
   except ValidationError:
-    logger.warning('An unauthorized access detected')
+    # logger.warning('An unauthorized access detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401,
     )
   except Exception as e:
     logger.exception(e)
-    logger.warning('An unauthorized access detected')
+    # logger.warning('An unauthorized access detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401

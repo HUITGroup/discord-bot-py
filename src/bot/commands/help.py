@@ -26,5 +26,5 @@ class Help(commands.Cog):
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):  # noqa: D103
   await bot.add_cog(Help(bot))
