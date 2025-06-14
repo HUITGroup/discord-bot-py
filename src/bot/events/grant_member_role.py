@@ -13,14 +13,14 @@ class GrantMemberRole(commands.Cog):
   def __init__(self, bot: commands.Bot) -> None:
     self.bot = bot
 
-  async def grant_member_role(self, username: str) -> bool:
+  async def grant_member_role(self, username: str) -> tuple[bool, bool]:
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
     member_role_id, err = await crud.get_member_role_id(GUILD_ID)
     if err:
       logger.error('member role idの検索処理が異常終了しました')
-      return False
+      return False, True
 
     assert member_role_id is not None
     member_role = guild.get_role(member_role_id)
@@ -38,9 +38,9 @@ class GrantMemberRole(commands.Cog):
     user, err = await crud.get_user_by_username(username)
     if err:
       logger.error('ユーザーの検索処理が異常終了しました')
-      return False
+      return False, True
     if user is None:
-      return False
+      return False, False
 
     discord_user = guild.get_member(user.user_id)
     assert discord_user is not None
@@ -52,7 +52,7 @@ class GrantMemberRole(commands.Cog):
     if err:
       logger.error('体験入部期間の期日のリセット処理が異常終了しました')
 
-    return True
+    return True, False
 
   async def manage_channel(self, username: str) -> bool:
     user, err = await crud.get_user_by_username(username)

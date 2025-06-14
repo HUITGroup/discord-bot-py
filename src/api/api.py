@@ -83,7 +83,7 @@ async def submission(request: Request):
 
   logger.info('フォーム入力処理を正常終了しました')
 
-  return web.Response(text="ok")
+  return web.json_response({"ok": "accepted"}, status=200)
 
 async def grant_member_role(request: Request):
   logger.info('チェック入れを検知しました')
@@ -101,9 +101,11 @@ async def grant_member_role(request: Request):
   assert cog is not None
   cog = cast(GrantMemberRole, cog)
 
-  res = await cog.grant_member_role(data.username)
+  found, err = await cog.grant_member_role(data.username)
 
-  if not res:
+  if err:
+    return web.json_response({"error": "Internal server error"}, status=500)
+  if not found:
     logger.warning(f'`{data.username}` のユーザーが見つかりませんでした')
     return web.json_response({"error": "user is not found."}, status=404)
 
@@ -112,13 +114,26 @@ async def grant_member_role(request: Request):
     return web.json_response({"error": "Internal server error"}, status=500)
 
   logger.info('ロール付与処理を正常終了しました')
-  return web.Response(text='ok')
+  return web.json_response({"ok": "accepted"}, status=200)
 
 @web.middleware
 async def hmac_auth_middleware(
   request: Request,
   handler: Callable[[web.Request], Awaitable[web.Response]]
 ) -> Response:
+  """HMAC認証用ミドルウェア
+
+  Args:
+      request (Request): _description_
+      handler (Callable[[web.Request], Awaitable[web.Response]]): _description_
+
+  Raises:
+      ValueError: _description_
+      ValueError: _description_
+
+  Returns:
+      Response: _description_
+  """
   try:
     raw_body = await request.json()
     body = BaseRequest(**raw_body)
