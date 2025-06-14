@@ -40,7 +40,7 @@ async def get_member_role_year(session: AsyncSession, guild_id: int) -> int|None
     int|None: 現在紐付いているmember roleの年度。紐付いていない場合はNone
   """
   result = await session.get(MemberRole, guild_id)
-  await session.commit()
+  # await session.commit()
   if result is None:
     return None
   else:
@@ -60,7 +60,7 @@ async def get_member_role_id(session: AsyncSession, guild_id: int) -> int|None:
   result = await session.execute(
     select(MemberRole).where(MemberRole.guild_id == guild_id)
   )
-  await session.commit()
+  # await session.commit()
   role = result.scalar_one_or_none()
 
   if role is None:
