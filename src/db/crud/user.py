@@ -37,7 +37,7 @@ async def get_user_by_username(
     UserData|None: 該当ユーザーのUserData。存在しない場合はNone
   """
   result = await session.get(UserData, username)
-  await session.commit()
+  # await session.commit()
   return result
 
 @err_handler
@@ -57,7 +57,27 @@ async def get_user_by_nickname(
   result = await session.execute(
     select(UserData).where(UserData.nickname == nickname)
   )
-  await session.rollback()
+  # await session.rollback()
+
+  return result.scalar_one_or_none()
+
+@err_handler
+async def get_user_by_channel_id(
+  session: AsyncSession,
+  channel_id: int,
+) -> UserData|None:
+  """UserDataを紐づいているchannel idから検索します
+
+  Args:
+      session (AsyncSession): _description_
+      channel_id (int): channel id
+
+  Returns:
+      UserData|None: _description_
+  """
+  result = await session.execute(
+    select(UserData).where(UserData.channel_id == channel_id)
+  )
 
   return result.scalar_one_or_none()
 
@@ -78,7 +98,7 @@ async def get_users_by_deadline(
   result = await session.execute(
     select(UserData).where(UserData.deadline == deadline)
   )
-  await session.commit()
+  # await session.commit()
   return list(result.scalars().all())
 
 @err_handler
@@ -92,7 +112,7 @@ async def get_all_users(session: AsyncSession) -> list[UserData]:
     list[UserData]: ユーザー一覧
   """
   result = await session.execute(select(UserData))
-  await session.commit()
+  # await session.commit()
   return list(result.scalars().all())
 
 @err_handler
@@ -112,7 +132,7 @@ async def get_channel_id_by_user_id(
   result = await session.execute(
     select(UserData).where(UserData.user_id == user_id)
   )
-  await session.commit()
+  # await session.commit()
   user = result.scalar_one_or_none()
   if user is None:
     return None
@@ -190,4 +210,13 @@ async def delete_user(session: AsyncSession, user_id: int):
 async def csv_to_sql(session: AsyncSession, df: pd.DataFrame):
   objs = [UserData(**row) for row in df.to_dict(orient='records')]
   session.add_all(objs)
+  await session.commit()
+
+@err_handler
+async def csv_to_sql_each_row(session: AsyncSession, df: pd.DataFrame):
+  for row in df.to_dict(orient='records'):
+    result = await session.get(UserData, row['username'])
+    if result is None:
+      session.add(UserData(**row))
+
   await session.commit()
