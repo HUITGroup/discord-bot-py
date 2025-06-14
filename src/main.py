@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from api import start_web_server
 from bot import bot
 from db.database import init_models
-from utils.loggers import DiscordHandler
+from utils.handlers import DiscordHandler
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'logs'
@@ -24,6 +24,7 @@ EXTENSIONS = [
   'bot.commands.help',
   'bot.commands.parrot',
   'bot.commands.member_year',
+  'bot.commands.log',
   'bot.events.member_join',
   'bot.events.timeline',
   'bot.events.grant_member_role',

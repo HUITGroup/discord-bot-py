@@ -124,7 +124,8 @@ async def _create(interaction: discord.Interaction, year: str):
   private_channels = {
     'cat-gpt',
     'timeline',
-    'moderator'
+    'moderator',
+    'これ買いたい'
   }
   permissions = discord.PermissionOverwrite(
     view_channel=True,

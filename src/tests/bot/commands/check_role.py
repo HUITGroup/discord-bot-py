@@ -40,13 +40,24 @@ class CheckRole(commands.Cog):
   @app_commands.checks.has_permissions(administrator=True)
   async def sync_user_data(self, interaction: discord.Interaction):
     if interaction.user.nick != 'misaizu':
-      interaction.response.send_message('misaizuにしか実行できない設定にしてあります')
+      await interaction.response.send_message('misaizuにしか実行できない設定にしてあります')
 
     df = pd.read_csv(ABS / 'map.csv')
     df = df.where(pd.notnull(df), None)
     await crud.csv_to_sql(df)
 
     await interaction.response.send_message('running...')
+
+  @app_commands.command(name='test', description='test')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def test(self, interaction: discord.Interaction):
+    await interaction.response.send_message('（＾ω＾）')
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    channel = guild.get_channel(1225392486743146526)
+    print(channel.name)
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(CheckRole(bot))
