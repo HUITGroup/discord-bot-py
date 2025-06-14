@@ -136,12 +136,14 @@ async def hmac_auth_middleware(
       raise ValueError("Invalid signature")
 
   except ValidationError:
+    logger.warning('An unauthorized access detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401,
     )
   except Exception as e:
-    logger.error(e)
+    logger.exception(e)
+    logger.warning('An unauthorized access detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401
