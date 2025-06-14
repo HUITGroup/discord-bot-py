@@ -30,7 +30,6 @@ JST = tz(td(hours=9), 'JST')
 
 START = time(hour=9, tzinfo=JST)
 
-# print(START.tzinfo)
 logger.info(f'入部期間チェックは毎日 {START} に行われます。')
 
 class MemberJoin(commands.Cog):
@@ -261,7 +260,7 @@ class MemberJoin(commands.Cog):
 
   @tasks.loop(time=START)
   async def check_deadline(self):
-    logger.info('deadline check has started')
+    logger.info('体験入部期間の期日の確認処理を開始しました')
 
     today = dt.now(JST).date()
     users, err = await crud.get_users_by_deadline(today-td(days=1))
@@ -299,7 +298,7 @@ class MemberJoin(commands.Cog):
 
   @tasks.loop(time=START)
   async def check_near_deadline(self):
-    logger.info('near deadline check has started')
+    logger.info('体験入部期間の期日(1週間前警告)の確認処理を開始しました')
 
     deadline = (dt.now(JST) + td(days=7)).date()
     users, err = await crud.get_users_by_deadline(deadline)

@@ -28,6 +28,10 @@ class DiscordHandler(logging.Handler):
       logger.warning('Skipped: no running event loop')
       return
 
+    if record.name.startswith('sqlalchemy.engine')\
+    and (self.level == logging.INFO or self.level == logging.DEBUG):
+      return
+
     message = self.format(record)
     coro = self.send_to_discord(message, record.levelname)
     asyncio.run_coroutine_threadsafe(coro, self.loop)
