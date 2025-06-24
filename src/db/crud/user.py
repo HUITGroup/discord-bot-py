@@ -3,6 +3,7 @@ from typing import Literal
 
 import pandas as pd
 from sqlalchemy import delete, select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.crud.utils import err_handler
@@ -21,6 +22,9 @@ async def reset_deadline(session: AsyncSession, username: str) -> None:
   if user:
     user.deadline = None
     await session.commit()
+  else:
+    raise NoResultFound(f'{username=}のユーザーが見つかりませんでした')
+
 
 @err_handler
 async def get_user_by_username(
