@@ -1,13 +1,8 @@
 name: Docker Image CI
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
 jobs:
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +22,7 @@ jobs:
 
     - name: Deploy
       run: |
-        ssh user@${{ secrets.GCE_HOST }} << 'EOF'
+        ssh user@${{ secrets.GCE_HOST }} -p 533 << 'EOF'
           cd /huit-app/
 
           # Pull latest code just in case
