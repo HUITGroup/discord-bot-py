@@ -29,12 +29,6 @@ class GrantMemberRole(commands.Cog):
     guest_role = guild.get_role(GUEST_ROLE_ID)
     assert guest_role is not None
 
-    deadline_role = discord.utils.find(
-      lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)),
-      guild.roles
-    )
-    assert deadline_role is not None
-
     user, err = await crud.get_user_by_username(username)
     if err:
       logger.error('ユーザーの検索処理が異常終了しました')
@@ -44,6 +38,13 @@ class GrantMemberRole(commands.Cog):
 
     discord_user = guild.get_member(user.user_id)
     assert discord_user is not None
+
+    deadline_role = discord.utils.find(
+      lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)),
+      discord_user.roles
+    )
+    if deadline_role is None:
+      logger.warning(f'')
 
     await discord_user.add_roles(member_role)
     await discord_user.remove_roles(guest_role, deadline_role)

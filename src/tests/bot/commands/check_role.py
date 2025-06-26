@@ -1,8 +1,10 @@
+import logging
 import os
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
 from pathlib import Path
+from typing import cast
 
 import discord
 import pandas as pd
@@ -10,6 +12,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from bot.events.grant_member_role import GrantMemberRole
 from db import crud
 from utils.constants import ARCHIVED_CATEGORY_ID, GUEST_ROLE_ID, GUILD_ID
 
@@ -31,6 +34,8 @@ roles = {
   'm2': 1368682473869021235,
   'd': 1368682518257205329,
 }
+
+logger = logging.getLogger('huitLogger')
 
 class CheckRole(commands.Cog):
   def __init__(self, bot: commands.Bot):
@@ -138,6 +143,41 @@ class CheckRole(commands.Cog):
           await channel.send(f'{channel.name} を archiveしました')
 
     print(*edited, sep='\n')
+
+  @app_commands.command(name='grant_member_role', description='grant')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def grant_member_role(self, interaction: discord.Interaction, username: str):
+    await interaction.response.send_message('（＾ω＾）')
+
+    cog = self.bot.get_cog('GrantMemberRole')
+    assert cog is not None
+    cog = cast(GrantMemberRole, cog)
+    await cog.grant_member_role(username)
+
+  @app_commands.command(name='grant_grade_role', description='tst')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def grant_grade_role(self, interaction: discord.Interaction):
+    await interaction.response.send_message('（＾ω＾）')
+
+    users, err = await crud.get_all_users()
+    if err:
+      return
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    for user in users:
+      discord_user = guild.get_member(user.user_id)
+      if discord_user is None:
+        logger.warning(f'skipped for {user.username=}')
+        continue
+
+      if user.grade == 'other':
+        continue
+      role = guild.get_role(roles[user.grade])
+      assert role is not None
+
+      await discord_user.add_roles(role)
 
 
 async def setup(bot: commands.Bot):

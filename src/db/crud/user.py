@@ -120,6 +120,29 @@ async def get_all_users(session: AsyncSession) -> list[UserData]:
   return list(result.scalars().all())
 
 @err_handler
+async def update_username(
+  session: AsyncSession,
+  old_username: str,
+  new_username: str
+) -> None:
+  """指定usernameのユーザーのusernameを更新します
+
+  Args:
+    session (AsyncSession): _description_
+    old_username (str): _description_
+    new_username (str): _description_
+
+  Returns:
+    _type_: _description_
+  """
+  result = await session.get(UserData, old_username)
+  if result is None:
+    raise NoResultFound(f'{old_username=}, {new_username=}のユーザーが見つかりませんでした')
+
+  result.username = new_username
+  await session.commit()
+
+@err_handler
 async def get_channel_id_by_user_id(
   session: AsyncSession,
   user_id: int

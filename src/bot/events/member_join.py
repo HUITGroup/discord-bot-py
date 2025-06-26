@@ -14,6 +14,7 @@ import db.crud as crud
 from db.models import UserData
 from utils.constants import (
   ARCHIVED_CATEGORY_ID,
+  GRADE_ROLE_ID,
   GUEST_ROLE_ID,
   GUILD_ID,
   INFO_CHANNEL_ID,
@@ -37,6 +38,31 @@ class MemberJoin(commands.Cog):
     self.bot = bot
     self.check_deadline.start()
     self.check_near_deadline.start()
+
+  async def grant_grade_role(self, user_id: int, grade: str):
+    if grade == 'other':
+      return
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    discord_user = guild.get_member(user_id)
+    assert discord_user is not None
+
+    for grade, role_id in GRADE_ROLE_ID.items():
+      role = guild.get_role(role_id)
+      if role is None:
+        logger.warning(f'{grade} のロールが存在しません。constants.pyに登録されているrole_idと整合しているかを確認してください')
+        continue
+
+      await discord_user.remove_roles(role)
+
+    role = guild.get_role(GRADE_ROLE_ID[grade])
+    if role is None:
+      logger.warning(f'{grade} のロールが存在しません。constants.pyに登録されているrole_idと整合しているかを確認してください')
+      return
+
+    await discord_user.add_roles(role)
 
   async def _check_times_exists(self, username: str, nickname: str) -> bool:
     guild = self.bot.get_guild(GUILD_ID)
@@ -222,6 +248,7 @@ class MemberJoin(commands.Cog):
     await member.guild.system_channel.send(msg)
 
     await self._prepare_channel(member, user, raw_limit_day)
+    await self._grant_grade_role(member, user.grade)
 
   @commands.Cog.listener()
   async def on_member_leave(self, member: discord.Member):
@@ -231,32 +258,38 @@ class MemberJoin(commands.Cog):
 
   @commands.Cog.listener()
   async def on_member_update(self, before: discord.Member, after: discord.Member):
-    if before.roles == after.roles:
-      return
+    if before.name != after.name:
+      logging.debug('username update event')
 
-    print('on_member_update event')
-
-    guild = self.bot.get_guild(GUILD_ID)
-    assert guild is not None
-
-    roles = after.roles
-    member_role = discord.utils.find(lambda role: 'member' in role.name, roles)
-    guest_role = discord.utils.get(roles, id=GUEST_ROLE_ID)
-
-    if member_role is None and guest_role is None:
-      user_id = after.id
-      channel_id, err = await crud.get_channel_id_by_user_id(user_id)
+      _, err = await crud.update_username(before.name, after.name)
       if err:
+        logging.error('username更新処理が異常終了しました')
         return
-      assert channel_id is not None
+    elif before.roles != after.roles:
+      logging.debug('role update event')
 
-      channel = guild.get_channel(channel_id)
-      assert channel is not None
+      guild = self.bot.get_guild(GUILD_ID)
+      assert guild is not None
 
-      category = discord.utils.get(guild.categories, id=ARCHIVED_CATEGORY_ID)
-      assert isinstance(channel, discord.TextChannel)
+      roles = after.roles
+      member_role = discord.utils.find(lambda role: 'member' in role.name, roles)
+      guest_role = discord.utils.get(roles, id=GUEST_ROLE_ID)
 
-      await channel.edit(category=category)
+      if member_role is None and guest_role is None:
+        user_id = after.id
+        channel_id, err = await crud.get_channel_id_by_user_id(user_id)
+        if err:
+          logging.error('channel検索処理が異常終了しました')
+          return
+        assert channel_id is not None
+
+        channel = guild.get_channel(channel_id)
+        assert channel is not None
+
+        category = discord.utils.get(guild.categories, id=ARCHIVED_CATEGORY_ID)
+        assert isinstance(channel, discord.TextChannel)
+
+        await channel.edit(category=category)
 
   @tasks.loop(time=START)
   async def check_deadline(self):

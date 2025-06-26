@@ -97,11 +97,13 @@ async def grant_member_role(request: Request):
     logger.exception(e)
     return web.json_response({"error": "Internal server error"}, status=500)
 
-  cog = bot.get_cog('GrantMemberRole')
-  assert cog is not None
-  cog = cast(GrantMemberRole, cog)
+  grant_cog = bot.get_cog('GrantMemberRole')
+  assert grant_cog is not None
+  member_join_cog = bot.get_cog('MemberJoin')
+  grant_cog = cast(GrantMemberRole, grant_cog)
+  member_join_cog = cast(MemberJoin, member_join_cog)
 
-  found, err = await cog.grant_member_role(data.username)
+  found, err = await grant_cog.grant_member_role(data.username)
 
   if err:
     return web.json_response({"error": "Internal server error"}, status=500)
@@ -109,9 +111,17 @@ async def grant_member_role(request: Request):
     logger.warning(f'`{data.username}` のユーザーが見つかりませんでした')
     return web.json_response({"error": "user is not found."}, status=404)
 
-  err = await cog.manage_channel(data.username)
+  err = await grant_cog.manage_channel(data.username)
   if err:
     return web.json_response({"error": "Internal server error"}, status=500)
+
+  user, err = await crud.get_user_by_username(data.username)
+  assert user is not None
+  if err:
+    logger.error('ユーザー検索処理が異常終了しました')
+    return web.json_response({"error": "Internal server error"}, status=500)
+
+  await member_join_cog.grant_grade_role(user.user_id, user.grade)
 
   logger.info('ロール付与処理を正常終了しました')
   return web.json_response({"ok": "accepted"}, status=200)
