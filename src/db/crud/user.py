@@ -3,6 +3,7 @@ from typing import Literal
 
 import pandas as pd
 from sqlalchemy import delete, select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.crud.utils import err_handler
@@ -21,6 +22,9 @@ async def reset_deadline(session: AsyncSession, username: str) -> None:
   if user:
     user.deadline = None
     await session.commit()
+  else:
+    raise NoResultFound(f'{username=}のユーザーが見つかりませんでした')
+
 
 @err_handler
 async def get_user_by_username(
@@ -114,6 +118,29 @@ async def get_all_users(session: AsyncSession) -> list[UserData]:
   result = await session.execute(select(UserData))
   # await session.commit()
   return list(result.scalars().all())
+
+@err_handler
+async def update_username(
+  session: AsyncSession,
+  old_username: str,
+  new_username: str
+) -> None:
+  """指定usernameのユーザーのusernameを更新します
+
+  Args:
+    session (AsyncSession): _description_
+    old_username (str): _description_
+    new_username (str): _description_
+
+  Returns:
+    _type_: _description_
+  """
+  result = await session.get(UserData, old_username)
+  if result is None:
+    raise NoResultFound(f'{old_username=}, {new_username=}のユーザーが見つかりませんでした')
+
+  result.username = new_username
+  await session.commit()
 
 @err_handler
 async def get_channel_id_by_user_id(

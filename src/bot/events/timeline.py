@@ -139,7 +139,7 @@ class Timeline(commands.Cog):
 
   @commands.Cog.listener()
   async def on_message_delete(self, message: discord.Message):  # noqa: D102
-    logger.info('on_message_delete called')
+    logger.debug('on_message_delete called')
 
     timeline_message_id, err = await crud.get_timeline_message_id(message.id)
     if err:
