@@ -1,5 +1,9 @@
 name: Docker Image CI
 
+on:
+  push:
+    branches: [ "main" ]
+
 jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
