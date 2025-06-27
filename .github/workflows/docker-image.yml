@@ -24,14 +24,14 @@ jobs:
 
     - name: Deploy
       run: |
-        ssh user@${{ secrets.GCE_HOST }} -p 533 << 'EOF'
+        ssh user@${{ secrets.GCE_HOST }} -p 533 << EOF
           cd /huit-app/discord-bot-py
 
           # Pull latest code just in case
           sudo git pull origin main
 
-          echo ${{ secrets.NGINX_CONF }} | sudo tee nginx/nginx.conf
-          echo ${{ secrets.ENV_FILE }} | sudo tee .env
+          echo "$NGINX_CONF" | sudo tee nginx/nginx.conf
+          echo "$ENV_FILE" | sudo tee .env
 
           # Check if only huit-bot changed
           if git diff --name-only HEAD~1 HEAD | grep -q '^src/'; then
@@ -42,3 +42,6 @@ jobs:
 
           # sudo docker image prune -f  # optional: clean up unused images
         EOF
+      env:
+        NGINX_CONF: ${{ secrets.NGINX_CONF }}
+        ENV_FILE: ${{ secrets.ENV_FILE }}
