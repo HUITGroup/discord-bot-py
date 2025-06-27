@@ -28,6 +28,12 @@ jobs:
       env:
         NGINX_CONF: ${{ secrets.NGINX_CONF }}
 
+    - name: Restore .env from secret
+      run: |
+        echo "$ENV_FILE" > .env
+      env:
+        ENV_FILE: ${{ secrets.ENV_FILE }}
+
     - name: Deploy
       run: |
         ssh user@${{ secrets.GCE_HOST }} -p 533 << 'EOF'
