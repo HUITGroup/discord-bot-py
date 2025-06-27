@@ -62,7 +62,7 @@ services:
     entrypoint: >
       sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot
       --email learn.program.hoku@gmail.com --agree-tos --no-eff-email
-      -d api.huitgroup.net -d www.api.huitgroup.net"
+      -d api.huitgroup.net"
     depends_on:
       - nginx
     networks:
