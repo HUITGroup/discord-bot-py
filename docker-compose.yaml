@@ -53,6 +53,22 @@ services:
     networks:
       - webnet
 
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - ./nginx/www:/var/www/certbot
+    entrypoint: >
+      sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot
+      --email learn.program.hoku@gmail.com --agree-tos --no-eff-email
+      -d api.huitgroup.net -d www.api.huitgroup.net"
+    depends_on:
+      - nginx
+    networks:
+      - webnet
+
+
 networks:
   webnet:
     driver: bridge
