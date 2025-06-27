@@ -33,6 +33,8 @@ jobs:
         ssh user@${{ secrets.GCE_HOST }} -p 533 << 'EOF'
           cd /huit-app/
 
+          ls
+
           # Pull latest code just in case
           git pull origin main
 
