@@ -165,3 +165,4 @@ log/
 huit-bot*.json
 mysql-data
 ssl
+nginx.conf
