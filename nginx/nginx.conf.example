@@ -1,0 +1,27 @@
+events {}
+
+http {
+  server {
+    listen 80;
+    server_name __;
+
+    # HTTP → HTTPS へリダイレクト
+    location / {
+      return 301 https://$host$request_uri;
+    }
+  }
+
+  server {
+    listen 443 ssl;
+    server_name __;
+
+    ssl_certificate __;
+    ssl_certificate_key __;
+
+    location / {
+      proxy_pass __;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+    }
+  }
+}
