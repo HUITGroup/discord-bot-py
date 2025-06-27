@@ -67,6 +67,9 @@ services:
       - nginx
     networks:
       - webnet
+    deploy:
+      restart_policy:
+        condition: none
 
 
 networks:
