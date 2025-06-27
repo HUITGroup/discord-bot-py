@@ -31,9 +31,7 @@ jobs:
     - name: Deploy
       run: |
         ssh user@${{ secrets.GCE_HOST }} -p 533 << 'EOF'
-          cd /huit-app/
-
-          ls
+          cd /huit-app/discord-bot-py
 
           # Pull latest code just in case
           git pull origin main
