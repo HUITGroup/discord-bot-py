@@ -24,7 +24,7 @@ jobs:
 
     - name: Restore nginx.conf from secret
       run: |
-        echo "$NGINX_CONF" > nginx.conf
+        echo "$NGINX_CONF" > nginx/nginx.conf
       env:
         NGINX_CONF: ${{ secrets.NGINX_CONF }}
 
