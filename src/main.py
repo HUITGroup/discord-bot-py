@@ -38,7 +38,7 @@ with open(ABS / 'configs' / 'log_config.yaml') as f:
 logging.config.dictConfig(log_config)
 
 discord_handler = DiscordHandler(bot)
-discord_handler.setLevel(logging.WARNING)
+discord_handler.setLevel(logging.INFO)
 discord_handler.setFormatter(logging.Formatter(
   "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
 ))
