@@ -43,11 +43,14 @@ class GrantMemberRole(commands.Cog):
       lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)),
       discord_user.roles
     )
-    if deadline_role is None:
-      logger.warning(f'')
 
-    await discord_user.add_roles(member_role)
-    await discord_user.remove_roles(guest_role, deadline_role)
+    if deadline_role is not None:
+      await discord_user.add_roles(member_role)
+      await discord_user.remove_roles(guest_role, deadline_role)
+    else:
+      logger.info(
+        f'Skipped deadline role revocation: no deadline roles found for {username}'
+      )
 
     _, err = await crud.reset_deadline(username)
     if err:
