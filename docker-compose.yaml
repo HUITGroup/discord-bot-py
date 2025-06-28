@@ -47,8 +47,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./nginx/www:/var/www/certbot
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - huit-bot
     networks:
