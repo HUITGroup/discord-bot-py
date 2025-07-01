@@ -1,5 +1,5 @@
-import re
+from datetime import date
 
 
-a = re.fullmatch(r'\d{4}/\d{2}/\d{2}', '2025/07/01')
+a = date(2022, 2, 31)
 print(a)
