@@ -292,18 +292,28 @@ class MemberJoin(commands.Cog):
         await channel.edit(category=category)
 
   @tasks.loop(time=START)
-  async def check_deadline(self):
+  async def check_deadline(
+    self,
+    _date: date|None = None,
+  ):
     logger.info('体験入部期間の期日の確認処理を開始しました')
 
-    today = dt.now(JST).date()
+    if _date is None:
+      today = dt.now(JST).date()
+    else:
+      today = _date
+
     users, err = await crud.get_users_by_deadline(today-td(days=1))
     if err:
       logger.error('check_deadlineが異常終了しました')
+
+    logger.info(f'{today=} として処理を開始します')
 
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
     if not users:
+      logger.info('対象ユーザーが見つかりませんでした。処理を終了します。')
       return
 
     role = guild.get_role(GUEST_ROLE_ID)
@@ -330,10 +340,17 @@ class MemberJoin(commands.Cog):
       await guild.system_channel.send(msg)
 
   @tasks.loop(time=START)
-  async def check_near_deadline(self):
+  async def check_near_deadline(
+    self,
+    _date: date|None = None
+  ):
     logger.info('体験入部期間の期日(1週間前警告)の確認処理を開始しました')
 
-    deadline = (dt.now(JST) + td(days=7)).date()
+    if _date is None:
+      deadline = (dt.now(JST) + td(days=7)).date()
+    else:
+      deadline = _date + td(days=7)
+
     users, err = await crud.get_users_by_deadline(deadline)
     if err:
       logger.error('check_near_deadlineが異常終了しました')
@@ -360,6 +377,29 @@ class MemberJoin(commands.Cog):
 
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)
+
+  @app_commands.command(
+    name='check_deadlines',
+    description='手動期限チェックコマンド'
+  )
+  @app_commands.checks.has_permissions(administrator=True)
+  async def check_deadlines(
+    self,
+    interactions: discord.Interaction,
+    year: int,
+    month: int,
+    day: int,
+  ):
+    try:
+      deadline = date(year, month, day)
+    except ValueError as e:
+      logger.exception(e)
+      await interactions.response.send_message('無効な日付です')
+      return
+
+    await interactions.response.send_message('（＾ω＾）')
+    await self.check_deadline(deadline)
+    await self.check_near_deadline(deadline)
 
 async def setup(bot: commands.Bot):  # noqa: D103
   cog = MemberJoin(bot)

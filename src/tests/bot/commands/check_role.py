@@ -14,7 +14,12 @@ from dotenv import load_dotenv
 
 from bot.events.grant_member_role import GrantMemberRole
 from db import crud
-from utils.constants import ARCHIVED_CATEGORY_ID, GUEST_ROLE_ID, GUILD_ID
+from utils.constants import (
+  ARCHIVED_CATEGORY_ID,
+  GUEST_ROLE_ID,
+  GUILD_ID,
+  INFO_CHANNEL_ID,
+)
 
 JST = tz(td(hours=9), 'JST')
 
@@ -178,6 +183,39 @@ class CheckRole(commands.Cog):
       assert role is not None
 
       await discord_user.add_roles(role)
+
+  @app_commands.command(name='warn', description='warn')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def warn(self, interaction: discord.Interaction, username: str):
+    user, err = await crud.get_user_by_username(username)
+    if err:
+      logger.exception(err)
+      await interaction.response.send_message('(´・ω・`) ')
+      return
+
+    if user is None:
+      await interaction.response.send_message('指定ユーザーが見つかりませんでした')
+      return
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    discord_user = guild.get_member(user.user_id)
+    assert discord_user is not None
+
+    role = guild.get_role(GUEST_ROLE_ID)
+    assert role is not None
+    info_channel = guild.get_channel(INFO_CHANNEL_ID)
+
+    await discord_user.remove_roles(role)
+
+    msg = f"{discord_user.mention} さんの体験入部期間が終了しました。"\
+      f"本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
+
+    assert guild.system_channel is not None
+    await guild.system_channel.send(msg)
+
+    await interaction.response.send_message('（＾ω＾）')
 
 
 async def setup(bot: commands.Bot):
