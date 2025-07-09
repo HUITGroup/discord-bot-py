@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from utils.constants import BOT_ROLE_ID
+from utils.constants import HUIT_BOT_ROLE_ID
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
@@ -86,7 +86,7 @@ async def _create(interaction: discord.Interaction, year: str):
     manage_events=True,
   )
 
-  me = guild.get_role(BOT_ROLE_ID)
+  me = guild.get_role(HUIT_BOT_ROLE_ID)
   assert me is not None
   role = await guild.create_role(
     name=f'member-{year}',
