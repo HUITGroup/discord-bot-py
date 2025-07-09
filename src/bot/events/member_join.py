@@ -48,10 +48,10 @@ class MemberJoin(commands.Cog):
     discord_user = guild.get_member(user_id)
     assert discord_user is not None
 
-    for grade, role_id in GRADE_ROLE_ID.items():
+    for grade_, role_id in GRADE_ROLE_ID.items():
       role = guild.get_role(role_id)
       if role is None:
-        logger.warning(f'{grade} のロールが存在しません。'\
+        logger.warning(f'{grade_} のロールが存在しません。'\
           'constants.pyに登録されているrole_idと整合しているかを確認してください')
         continue
 
