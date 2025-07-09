@@ -33,6 +33,8 @@ class DiscordHandler(logging.Handler):
       return
 
     message = self.format(record)
+    if 'We are being rate limited.' in message:
+      return
     coro = self.send_to_discord(message, record.levelname)
     asyncio.run_coroutine_threadsafe(coro, self.loop)
 

@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 import db.crud as crud
 from db.models import UserData
 from utils.constants import (
-  ARCHIVED_CATEGORY_ID,
   GRADE_ROLE_ID,
   GUEST_ROLE_ID,
   GUILD_ID,
@@ -52,14 +51,16 @@ class MemberJoin(commands.Cog):
     for grade, role_id in GRADE_ROLE_ID.items():
       role = guild.get_role(role_id)
       if role is None:
-        logger.warning(f'{grade} のロールが存在しません。constants.pyに登録されているrole_idと整合しているかを確認してください')
+        logger.warning(f'{grade} のロールが存在しません。'\
+          'constants.pyに登録されているrole_idと整合しているかを確認してください')
         continue
 
       await discord_user.remove_roles(role)
 
     role = guild.get_role(GRADE_ROLE_ID[grade])
     if role is None:
-      logger.warning(f'{grade} のロールが存在しません。constants.pyに登録されているrole_idと整合しているかを確認してください')
+      logger.warning(f'{grade} のロールが存在しません。'\
+        f'constants.pyに登録されているrole_idと整合しているかを確認してください')
       return
 
     await discord_user.add_roles(role)
@@ -149,7 +150,8 @@ class MemberJoin(commands.Cog):
       return
 
     member_role_id = role.id
-    _, err = await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
+    _, err =\
+      await crud.update_member_role_id(GUILD_ID, member_role_id, year=year)
     if err:
       return
 
@@ -160,7 +162,8 @@ class MemberJoin(commands.Cog):
     description='自分のtimesの名前を変更するコマンドです'
   )
   async def rename(self, interactions: discord.Interaction, name: str):
-    channel_id, err = await crud.get_channel_id_by_user_id(interactions.user.id)
+    channel_id, err =\
+      await crud.get_channel_id_by_user_id(interactions.user.id)
     if err:
       return
 
@@ -173,9 +176,11 @@ class MemberJoin(commands.Cog):
 
     if channel_id is None:
       if isinstance(you, str):
-        msg = f'あなたのtimesが見つかりませんでした。お近くの{you}までお知らせください．'
+        msg = 'あなたのtimesが見つかりませんでした。'\
+          f'お近くの{you}までお知らせください。'
       else:
-        msg = f'あなたのtimesが見つかりませんでした。お近くの{you.mention}までお知らせください．'
+        msg = 'あなたのtimesが見つかりませんでした。'\
+          f'お近くの{you.mention}までお知らせください。'
 
       await interactions.response.send_message(msg)
       return
@@ -194,7 +199,7 @@ class MemberJoin(commands.Cog):
     await interactions.response.send_message(msg)
 
   @commands.Cog.listener()
-  async def on_member_join(self, member: discord.Member):
+  async def on_member_join(self, member: discord.Member):  # noqa: D102
     assert self.bot.user is not None
     if member.bot or self.bot.user.id == member.id:
       return
@@ -248,16 +253,20 @@ class MemberJoin(commands.Cog):
     await member.guild.system_channel.send(msg)
 
     await self._prepare_channel(member, user, raw_limit_day)
-    await self._grant_grade_role(member, user.grade)
+    await self.grant_grade_role(member.id, user.grade)
 
   @commands.Cog.listener()
-  async def on_member_leave(self, member: discord.Member):
+  async def on_member_leave(self, member: discord.Member):  # noqa: D102
     _, err = await crud.delete_user(member.id)
     if err:
       logger.error('ユーザーの削除処理が異常終了しました')
 
   @commands.Cog.listener()
-  async def on_member_update(self, before: discord.Member, after: discord.Member):
+  async def on_member_update(  # noqa: D102
+    self,
+    before: discord.Member,
+    after: discord.Member
+  ):
     if before.name != after.name:
       logging.debug('username update event')
 
@@ -265,31 +274,6 @@ class MemberJoin(commands.Cog):
       if err:
         logging.error('username更新処理が異常終了しました')
         return
-    elif before.roles != after.roles:
-      logging.debug('role update event')
-
-      guild = self.bot.get_guild(GUILD_ID)
-      assert guild is not None
-
-      roles = after.roles
-      member_role = discord.utils.find(lambda role: 'member' in role.name, roles)
-      guest_role = discord.utils.get(roles, id=GUEST_ROLE_ID)
-
-      if member_role is None and guest_role is None:
-        user_id = after.id
-        channel_id, err = await crud.get_channel_id_by_user_id(user_id)
-        if err:
-          logging.error('channel検索処理が異常終了しました')
-          return
-        assert channel_id is not None
-
-        channel = guild.get_channel(channel_id)
-        assert channel is not None
-
-        category = discord.utils.get(guild.categories, id=ARCHIVED_CATEGORY_ID)
-        assert isinstance(channel, discord.TextChannel)
-
-        await channel.edit(category=category)
 
   @tasks.loop(time=START)
   async def check_deadline(
@@ -334,7 +318,8 @@ class MemberJoin(commands.Cog):
       await discord_user.remove_roles(role)
 
       msg = f"{discord_user.mention} さんの体験入部期間が終了しました。"\
-        f"本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
+        f"本入部希望の場合は {info_channel.mention} の手順に沿って"\
+        "部費をお納めください。"
 
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)
@@ -372,8 +357,10 @@ class MemberJoin(commands.Cog):
         )
         continue
 
-      msg = f"{discord_user.mention} さんの体験入部期間はあと 7日 で終了します。"\
-        f"本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
+      msg = f"{discord_user.mention} さんの体験入部期間は"\
+        "あと 7日 で終了します。"\
+        f"本入部希望の場合は {info_channel.mention} の手順に沿って"\
+        "部費をお納めください。"
 
       assert guild.system_channel is not None
       await guild.system_channel.send(msg)

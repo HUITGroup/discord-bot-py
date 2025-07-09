@@ -31,10 +31,17 @@ class UserData(Base):
   grade: Mapped[str] = mapped_column(
     String(5),
     CheckConstraint(
-      "grade IN ('b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'm1', 'm2', 'd', 'other')",
+      "grade IN ('b1', 'b2', 'b3', 'b4', 'b5', 'b6', "\
+        "'m1', 'm2', 'd', 'other')",
       name="grade_check"
     ),
     nullable=False
   )
   channel_id: Mapped[int|None] = mapped_column(BigInteger)
   deadline: Mapped[Date|None] = mapped_column(Date)
+
+class ArchiveCategory(Base):
+  __tablename__ = "archive_channel"
+  guild_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+  archive_category_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+  category_number: Mapped[int] = mapped_column(Integer, nullable=False)

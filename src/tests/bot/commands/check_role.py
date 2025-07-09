@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 from bot.events.grant_member_role import GrantMemberRole
 from db import crud
 from utils.constants import (
-  ARCHIVED_CATEGORY_ID,
   GUEST_ROLE_ID,
   GUILD_ID,
   INFO_CHANNEL_ID,
@@ -83,9 +82,9 @@ class CheckRole(commands.Cog):
     channel = guild.get_channel(1225392486743146526)
     print(channel.name)
 
-  @app_commands.command(name='archive', description='archive')
+  @app_commands.command(name='archive_no_roles', description='archive')
   @app_commands.checks.has_permissions(administrator=True)
-  async def archive(self, interaction: discord.Interaction):
+  async def archive_no_roles(self, interaction: discord.Interaction):
     if interaction.user.nick != 'misaizu':
       await interaction.response.send_message('null')
       return
