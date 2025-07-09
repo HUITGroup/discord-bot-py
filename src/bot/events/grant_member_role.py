@@ -44,13 +44,14 @@ class GrantMemberRole(commands.Cog):
       discord_user.roles
     )
 
-    if deadline_role is not None:
-      await discord_user.add_roles(member_role)
-      await discord_user.remove_roles(guest_role, deadline_role)
-    else:
+    await discord_user.add_roles(member_role)
+    await discord_user.remove_roles(guest_role)
+    if deadline_role is None:
       logger.info(
         f'Skipped deadline role revocation: no deadline roles found for {username}'
       )
+    else:
+      await discord_user.remove_roles(deadline_role)
 
     _, err = await crud.reset_deadline(username)
     if err:
