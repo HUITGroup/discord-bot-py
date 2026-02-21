@@ -6,7 +6,7 @@ from typing import Concatenate, ParamSpec, TypeVar
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.database import async_session
+from src.db.database import async_session
 
 logger = logging.getLogger('huitLogger')
 

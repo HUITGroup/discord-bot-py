@@ -5,8 +5,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from db import crud
-from utils.constants import (
+from src.db import crud
+from src.utils.constants import (
   BOT_ROLE_ID,
   GUEST_ROLE_ID,
   GUILD_ID,
