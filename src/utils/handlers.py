@@ -6,7 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from utils.constants import GUILD_ID, LEVELNAME_TO_COLOR, LOG_CHANNEL_ID
+from src.utils.constants import GUILD_ID, LEVELNAME_TO_COLOR, LOG_CHANNEL_ID
 
 logger = logging.getLogger('textLogger')
 

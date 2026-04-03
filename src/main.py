@@ -7,10 +7,10 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from api import start_web_server
-from bot import bot
-from db.database import init_models
-from utils.handlers import DiscordHandler
+from src.api import start_web_server
+from src.bot import bot
+from src.db.database import init_models
+from src.utils.handlers import DiscordHandler
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'logs'
@@ -25,6 +25,7 @@ EXTENSIONS = [
   'bot.commands.parrot',
   'bot.commands.member_year',
   'bot.commands.log',
+  'bot.commands.promotion',
   'bot.events.member_join',
   'bot.events.timeline',
   'bot.events.grant_member_role',

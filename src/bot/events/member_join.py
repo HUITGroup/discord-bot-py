@@ -10,9 +10,9 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
-import db.crud as crud
-from db.models import UserData
-from utils.constants import (
+import src.db.crud as crud
+from src.db.models import UserData
+from src.utils.constants import (
   GRADE_ROLE_ID,
   GUEST_ROLE_ID,
   GUILD_ID,
@@ -96,7 +96,7 @@ class MemberJoin(commands.Cog):
     member: discord.Member,
     user: UserData,
     raw_limit_day: date
-  ) -> None:
+  ) -> discord.TextChannel:
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
@@ -127,11 +127,15 @@ class MemberJoin(commands.Cog):
       )
       if err:
         logger.error('ユーザーの本登録処理が異常終了しました')
+
+      return channel
     else:
       category = discord.utils.get(guild.categories, name=category_name)
       channel = guild.get_channel(user.channel_id)
       assert isinstance(channel, discord.TextChannel)
       await channel.edit(category=category)
+
+      return channel
 
   @app_commands.command(
     name='link_member_role',
@@ -240,19 +244,30 @@ class MemberJoin(commands.Cog):
       role = await guild.create_role(name=role_name)
       await member.add_roles(role)
 
+    channel = await self._prepare_channel(member, user, raw_limit_day)
+
     welcome_channel = guild.get_channel(WELCOME_CHANNEL_ID)
     assert welcome_channel is not None
 
     msg = (
       f"{member.mention} さん、HUITにようこそ！\n" \
       f"体験入部期間は {role_name} までとなります。\n" \
-      f"{welcome_channel.mention} を読んで、活動に楽しくご参加ください！"
+      f"{welcome_channel.mention} を読んで、活動に楽しくご参加ください！\n" \
+      f" --- \n" \
+      f"まずは自分のチャンネル( {channel.mention} )で自己紹介をしてみましょう！\n" \
+      f"```\n" \
+      f"ハンドルネーム(本名でも！): Slephy\n" \
+      f"所属: 北大 総合理系\n" \
+      f"学年: 1年\n" \
+      f"興味あるもの: Webサイト作ってみたいです！\n" \
+      f"すきなもの: インコ、スキー\n" \
+      f"ひとこと(あれば): コガネメキシコインコが好きです！\n" \
+      f"```" \
     )
 
     assert member.guild.system_channel is not None
     await member.guild.system_channel.send(msg)
 
-    await self._prepare_channel(member, user, raw_limit_day)
     await self.grant_grade_role(member.id, user.grade)
 
   @commands.Cog.listener()

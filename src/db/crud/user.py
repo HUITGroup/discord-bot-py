@@ -6,8 +6,8 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.crud.utils import err_handler
-from db.models import UserData
+from src.db.crud.utils import err_handler
+from src.db.models import UserData
 
 
 @err_handler
