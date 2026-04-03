@@ -95,9 +95,7 @@ class CheckRole(commands.Cog):
       "TIMES B3",
       "TIMES B4",
       "TIMES AFTER B4",
-      "TIMES B5",
-      "TIMES B6",
-      "TIMES M/D",
+      "TIMES B5/B6/M/D",
       "TIMES other",
     }
 
