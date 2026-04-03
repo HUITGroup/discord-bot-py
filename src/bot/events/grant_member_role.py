@@ -76,8 +76,8 @@ class GrantMemberRole(commands.Cog):
       channel = guild.get_channel(user.channel_id)
       assert isinstance(channel, discord.TextChannel)
 
-      if user.grade in {'m1', 'm2', 'd'}:
-        category_name = 'TIMES M/D'
+      if user.grade in {'b5', 'b6', 'm1', 'm2', 'd'}:
+        category_name = 'TIMES B5/B6/M/D'
       elif user.grade == 'other':
         category_name = 'TIMES other'
       else:

@@ -26,8 +26,7 @@ class Promotion(commands.Cog):
       'TIMES B1': 'TIMES B2',
       'TIMES B2': 'TIMES B3',
       'TIMES B3': 'TIMES B4',
-      'TIMES B4': 'TIMES M/D',
-      'TIMES B5': 'TIMES B6',
+      'TIMES B4': 'TIMES B5/B6/M/D',
     }
 
     await interaction.response.send_message('test')
