@@ -25,6 +25,7 @@ EXTENSIONS = [
   'bot.commands.parrot',
   'bot.commands.member_year',
   'bot.commands.log',
+  'bot.commands.promotion',
   'bot.events.member_join',
   'bot.events.timeline',
   'bot.events.grant_member_role',
