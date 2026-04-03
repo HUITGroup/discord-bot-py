@@ -7,10 +7,10 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from api import start_web_server
-from bot import bot
-from db.database import init_models
-from utils.handlers import DiscordHandler
+from src.api import start_web_server
+from src.bot import bot
+from src.db.database import init_models
+from src.utils.handlers import DiscordHandler
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'logs'

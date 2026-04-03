@@ -3,7 +3,7 @@
 from sqlalchemy import BigInteger, CheckConstraint, Date, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from db.database import Base
+from src.db.database import Base
 
 
 class TimelineChannel(Base):

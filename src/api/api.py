@@ -15,12 +15,12 @@ from aiohttp.web_response import Response
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
-from api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
-from bot import bot
-from bot.events.grant_member_role import GrantMemberRole
-from bot.events.member_join import MemberJoin
-from db import crud
-from utils.constants import GUILD_ID
+from src.api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
+from src.bot import bot
+from src.bot.events.grant_member_role import GrantMemberRole
+from src.bot.events.member_join import MemberJoin
+from src.db import crud
+from src.utils.constants import GUILD_ID
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')

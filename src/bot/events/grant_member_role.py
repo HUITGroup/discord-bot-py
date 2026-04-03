@@ -4,8 +4,8 @@ import re
 import discord
 from discord.ext import commands
 
-from db import crud
-from utils.constants import GUEST_ROLE_ID, GUILD_ID
+from src.db import crud
+from src.utils.constants import GUEST_ROLE_ID, GUILD_ID
 
 logger = logging.getLogger('huitLogger')
 
