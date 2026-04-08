@@ -80,8 +80,8 @@ class Promotion(commands.Cog):
 
       user, err = await crud.get_user_by_channel_id(channel.id)
       if err:
-        await interaction.channel.send(-1)
-        return
+        await interaction.channel.send(f'-1 {channel.name}')
+        continue
 
       if user is None:
         await interaction.channel.send(f'skipped channel {channel.name}')
