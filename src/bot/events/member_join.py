@@ -118,9 +118,9 @@ class MemberJoin(commands.Cog):
       message = welcome_channel.get_partial_message(TIMES_MESSAGE_ID)
       await channel.send(
         f'{member.mention}\ntimesを作成しました！\n' \
-        f'timesについての詳細はこちら→{message.jump_url}' \
-        f' --- ' \
-        f'まずは自己紹介をしてみましょう！' \
+        f'timesについての詳細はこちら→{message.jump_url}\n' \
+        f' --- \n' \
+        f'まずは自己紹介をしてみましょう！\n' \
         f"```\n" \
         f"ハンドルネーム(本名でも！): Slephy\n" \
         f"所属: 北大 総合理系\n" \
