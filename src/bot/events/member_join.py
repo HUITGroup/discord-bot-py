@@ -117,7 +117,18 @@ class MemberJoin(commands.Cog):
       )
       message = welcome_channel.get_partial_message(TIMES_MESSAGE_ID)
       await channel.send(
-        f'{member.mention}\ntimesを作成しました！\ntimesについての詳細はこちら→{message.jump_url}'
+        f'{member.mention}\ntimesを作成しました！\n' \
+        f'timesについての詳細はこちら→{message.jump_url}' \
+        f' --- ' \
+        f'まずは自己紹介をしてみましょう！' \
+        f"```\n" \
+        f"ハンドルネーム(本名でも！): Slephy\n" \
+        f"所属: 北大 総合理系\n" \
+        f"学年: 1年\n" \
+        f"興味あるもの: Webサイト作ってみたいです！\n" \
+        f"すきなもの: インコ、スキー\n" \
+        f"ひとこと(あれば): コガネメキシコインコが好きです！\n" \
+        f"```" \
       )
       _, err = await crud.register_user(
         member.name,
@@ -254,15 +265,7 @@ class MemberJoin(commands.Cog):
       f"体験入部期間は {role_name} までとなります。\n" \
       f"{welcome_channel.mention} を読んで、活動に楽しくご参加ください！\n" \
       f" --- \n" \
-      f"まずは自分のチャンネル( {channel.mention} )で自己紹介をしてみましょう！\n" \
-      f"```\n" \
-      f"ハンドルネーム(本名でも！): Slephy\n" \
-      f"所属: 北大 総合理系\n" \
-      f"学年: 1年\n" \
-      f"興味あるもの: Webサイト作ってみたいです！\n" \
-      f"すきなもの: インコ、スキー\n" \
-      f"ひとこと(あれば): コガネメキシコインコが好きです！\n" \
-      f"```" \
+      f"まずは自分のチャンネル( {channel.mention} )で自己紹介をしてみましょう！"
     )
 
     assert member.guild.system_channel is not None
