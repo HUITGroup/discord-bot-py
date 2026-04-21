@@ -4,6 +4,7 @@ from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
 from pathlib import Path
+from string import ascii_letters, digits
 
 import discord
 from discord import app_commands
@@ -69,6 +70,16 @@ class MemberJoin(commands.Cog):
     guild = self.bot.get_guild(GUILD_ID)
     assert guild is not None
 
+    english = ascii_letters + digits
+    if any(s not in english for s in nickname):
+      discord_user = discord.utils.get(guild.members, name=username)
+      assert discord_user is not None
+
+      msg = f'{discord_user.mention} 「ニックネーム」はスペースを含まない半角英数字で入力いただきますようお願いいたします。\nhttps://forms.gle/hXNotz3EprkmNipK6'
+      await guild.system_channel.send(msg)
+
+      return True
+
     times_channel = discord.utils.get(guild.channels, name=f'times_{nickname}')
 
     if times_channel is None:
@@ -77,7 +88,7 @@ class MemberJoin(commands.Cog):
       discord_user = discord.utils.get(guild.members, name=username)
       assert discord_user is not None
 
-      msg = f'{discord_user.mention} フォームで入力いただいた「ニックネーム（半角英数字）」が既に使われています。フォームを編集し、違うニックネームへの変更をお願いします。\nhttps://forms.gle/7xzSLV9xvpciJoJYA'
+      msg = f'{discord_user.mention} フォームで入力いただいた「ニックネーム（半角英数字）」が既に使われています。フォームを編集し、違うニックネームへの変更をお願いします。\nhttps://forms.gle/hXNotz3EprkmNipK6'
       await guild.system_channel.send(msg)
 
       return True
