@@ -101,6 +101,8 @@ class MemberJoin(commands.Cog):
 
     if discord_user:
       await self.on_member_join(discord_user)
+    else:
+      logger.warning('in the method "check_already_in_server": on_member_join was skipped for some reason.')
 
   async def _prepare_channel(
     self,
