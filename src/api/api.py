@@ -49,7 +49,7 @@ async def submission(request: Request):
   try:
     raw_data = await request.json()
     data = RegisterData(**json.loads(raw_data['data']))
-    print(data)
+    # print(data)
   except ValidationError as e:
     return web.json_response({"error": str(e)}, status=400)
   except Exception as e:
@@ -65,6 +65,7 @@ async def submission(request: Request):
   assert cog is not None
   cog = cast(MemberJoin, cog)
 
+  logger.info(repr(data.username))
   if user is None:
     # nicknameが被っているかどうかの処理
     _, err = await crud.pre_register_user(
