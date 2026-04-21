@@ -30,7 +30,7 @@ assert all([
 
 DATABASE_URL = (
   f"mysql+asyncmy://{MYSQL_USER}:{MYSQL_PASSWORD}"
-  f"@{MYSQL_ADDRESS}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+  f"@{MYSQL_ADDRESS}:{MYSQL_PORT}/{MYSQL_DATABASE}?charset=utf8mb4"
 )
 
 engine = create_async_engine(
