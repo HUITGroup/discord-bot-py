@@ -1,8 +1,10 @@
+import logging
 import os
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
 from pathlib import Path
+from typing import cast
 
 import discord
 import pandas as pd
@@ -10,8 +12,13 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from bot.events.grant_member_role import GrantMemberRole
 from db import crud
-from utils.constants import ARCHIVED_CATEGORY_ID, GUEST_ROLE_ID, GUILD_ID
+from utils.constants import (
+  GUEST_ROLE_ID,
+  GUILD_ID,
+  INFO_CHANNEL_ID,
+)
 
 JST = tz(td(hours=9), 'JST')
 
@@ -31,6 +38,8 @@ roles = {
   'm2': 1368682473869021235,
   'd': 1368682518257205329,
 }
+
+logger = logging.getLogger('huitLogger')
 
 class CheckRole(commands.Cog):
   def __init__(self, bot: commands.Bot):
@@ -73,9 +82,9 @@ class CheckRole(commands.Cog):
     channel = guild.get_channel(1225392486743146526)
     print(channel.name)
 
-  @app_commands.command(name='archive', description='archive')
+  @app_commands.command(name='archive_no_roles', description='archive')
   @app_commands.checks.has_permissions(administrator=True)
-  async def archive(self, interaction: discord.Interaction):
+  async def archive_no_roles(self, interaction: discord.Interaction):
     if interaction.user.nick != 'misaizu':
       await interaction.response.send_message('null')
       return
@@ -86,9 +95,7 @@ class CheckRole(commands.Cog):
       "TIMES B3",
       "TIMES B4",
       "TIMES AFTER B4",
-      "TIMES B5",
-      "TIMES B6",
-      "TIMES M/D",
+      "TIMES B5/B6/M/D",
       "TIMES other",
     }
 
@@ -138,6 +145,74 @@ class CheckRole(commands.Cog):
           await channel.send(f'{channel.name} を archiveしました')
 
     print(*edited, sep='\n')
+
+  @app_commands.command(name='grant_member_role', description='grant')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def grant_member_role(self, interaction: discord.Interaction, username: str):
+    await interaction.response.send_message('（＾ω＾）')
+
+    cog = self.bot.get_cog('GrantMemberRole')
+    assert cog is not None
+    cog = cast(GrantMemberRole, cog)
+    await cog.grant_member_role(username)
+
+  @app_commands.command(name='grant_grade_role', description='tst')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def grant_grade_role(self, interaction: discord.Interaction):
+    await interaction.response.send_message('（＾ω＾）')
+
+    users, err = await crud.get_all_users()
+    if err:
+      return
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    for user in users:
+      discord_user = guild.get_member(user.user_id)
+      if discord_user is None:
+        logger.warning(f'skipped for {user.username=}')
+        continue
+
+      if user.grade == 'other':
+        continue
+      role = guild.get_role(roles[user.grade])
+      assert role is not None
+
+      await discord_user.add_roles(role)
+
+  @app_commands.command(name='warn', description='warn')
+  @app_commands.checks.has_permissions(administrator=True)
+  async def warn(self, interaction: discord.Interaction, username: str):
+    user, err = await crud.get_user_by_username(username)
+    if err:
+      logger.exception(err)
+      await interaction.response.send_message('(´・ω・`) ')
+      return
+
+    if user is None:
+      await interaction.response.send_message('指定ユーザーが見つかりませんでした')
+      return
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    discord_user = guild.get_member(user.user_id)
+    assert discord_user is not None
+
+    role = guild.get_role(GUEST_ROLE_ID)
+    assert role is not None
+    info_channel = guild.get_channel(INFO_CHANNEL_ID)
+
+    await discord_user.remove_roles(role)
+
+    msg = f"{discord_user.mention} さんの体験入部期間が終了しました。"\
+      f"本入部希望の場合は {info_channel.mention} の手順に沿って部費をお納めください。"
+
+    assert guild.system_channel is not None
+    await guild.system_channel.send(msg)
+
+    await interaction.response.send_message('（＾ω＾）')
 
 
 async def setup(bot: commands.Bot):

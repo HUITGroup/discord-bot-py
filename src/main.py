@@ -7,10 +7,10 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from api import start_web_server
-from bot import bot
-from db.database import init_models
-from utils.handlers import DiscordHandler
+from src.api import start_web_server
+from src.bot import bot
+from src.db.database import init_models
+from src.utils.handlers import DiscordHandler
 
 ABS = Path(__file__).resolve().parents[1]
 LOG = ABS / 'logs'
@@ -25,9 +25,11 @@ EXTENSIONS = [
   'bot.commands.parrot',
   'bot.commands.member_year',
   'bot.commands.log',
+  'bot.commands.promotion',
   'bot.events.member_join',
   'bot.events.timeline',
   'bot.events.grant_member_role',
+  'bot.events.archive',
   'tests.bot.commands.test_log',
   'tests.bot.commands.check_role'
 ]
@@ -38,7 +40,7 @@ with open(ABS / 'configs' / 'log_config.yaml') as f:
 logging.config.dictConfig(log_config)
 
 discord_handler = DiscordHandler(bot)
-discord_handler.setLevel(logging.WARNING)
+discord_handler.setLevel(logging.INFO)
 discord_handler.setFormatter(logging.Formatter(
   "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
 ))

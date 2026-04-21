@@ -4,8 +4,8 @@ import re
 import discord
 from discord.ext import commands
 
-from db import crud
-from utils.constants import GUEST_ROLE_ID, GUILD_ID
+from src.db import crud
+from src.utils.constants import GUEST_ROLE_ID, GUILD_ID
 
 logger = logging.getLogger('huitLogger')
 
@@ -29,12 +29,6 @@ class GrantMemberRole(commands.Cog):
     guest_role = guild.get_role(GUEST_ROLE_ID)
     assert guest_role is not None
 
-    deadline_role = discord.utils.find(
-      lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)),
-      guild.roles
-    )
-    assert deadline_role is not None
-
     user, err = await crud.get_user_by_username(username)
     if err:
       logger.error('ユーザーの検索処理が異常終了しました')
@@ -45,8 +39,19 @@ class GrantMemberRole(commands.Cog):
     discord_user = guild.get_member(user.user_id)
     assert discord_user is not None
 
+    deadline_role = discord.utils.find(
+      lambda role: bool(re.fullmatch(r'\d{4}/\d{2}/\d{2}', role.name)),
+      discord_user.roles
+    )
+
     await discord_user.add_roles(member_role)
-    await discord_user.remove_roles(guest_role, deadline_role)
+    await discord_user.remove_roles(guest_role)
+    if deadline_role is None:
+      logger.info(
+        f'Skipped deadline role revocation: no deadline roles found for {username}'
+      )
+    else:
+      await discord_user.remove_roles(deadline_role)
 
     _, err = await crud.reset_deadline(username)
     if err:
@@ -71,8 +76,8 @@ class GrantMemberRole(commands.Cog):
       channel = guild.get_channel(user.channel_id)
       assert isinstance(channel, discord.TextChannel)
 
-      if user.grade in {'m1', 'm2', 'd'}:
-        category_name = 'TIMES M/D'
+      if user.grade in {'b5', 'b6', 'm1', 'm2', 'd'}:
+        category_name = 'TIMES B5/B6/M/D'
       elif user.grade == 'other':
         category_name = 'TIMES other'
       else:

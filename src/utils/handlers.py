@@ -6,7 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from utils.constants import GUILD_ID, LEVELNAME_TO_COLOR, LOG_CHANNEL_ID
+from src.utils.constants import GUILD_ID, LEVELNAME_TO_COLOR, LOG_CHANNEL_ID
 
 logger = logging.getLogger('textLogger')
 
@@ -33,6 +33,8 @@ class DiscordHandler(logging.Handler):
       return
 
     message = self.format(record)
+    if 'We are being rate limited.' in message:
+      return
     coro = self.send_to_discord(message, record.levelname)
     asyncio.run_coroutine_threadsafe(coro, self.loop)
 

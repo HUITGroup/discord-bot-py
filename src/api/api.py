@@ -15,12 +15,12 @@ from aiohttp.web_response import Response
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
-from api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
-from bot import bot
-from bot.events.grant_member_role import GrantMemberRole
-from bot.events.member_join import MemberJoin
-from db import crud
-from utils.constants import GUILD_ID
+from src.api.schemas.schema import BaseRequest, GrantRoleData, RegisterData
+from src.bot import bot
+from src.bot.events.grant_member_role import GrantMemberRole
+from src.bot.events.member_join import MemberJoin
+from src.db import crud
+from src.utils.constants import GUILD_ID
 
 ABS = Path(__file__).resolve().parents[2]
 load_dotenv(ABS / '.env')
@@ -67,15 +67,27 @@ async def submission(request: Request):
 
   if user is None:
     # nicknameが被っているかどうかの処理
-    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(
+      data.username,
+      data.nickname,
+      data.grade
+    )
     await cog.check_already_in_server(data.username)
   elif user.channel_id is None:
     # nicknameが被っているかどうかの処理
-    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(
+      data.username,
+      data.nickname,
+      data.grade
+    )
     await cog.check_already_in_server(data.username)
   else:
     # 学年更新処理のみ
-    _, err = await crud.pre_register_user(data.username, data.nickname, data.grade)
+    _, err = await crud.pre_register_user(
+      data.username,
+      data.nickname,
+      data.grade
+    )
 
   if err:
     logger.error('ユーザーの事前登録処理が異常終了しました')
@@ -97,11 +109,13 @@ async def grant_member_role(request: Request):
     logger.exception(e)
     return web.json_response({"error": "Internal server error"}, status=500)
 
-  cog = bot.get_cog('GrantMemberRole')
-  assert cog is not None
-  cog = cast(GrantMemberRole, cog)
+  grant_cog = bot.get_cog('GrantMemberRole')
+  assert grant_cog is not None
+  member_join_cog = bot.get_cog('MemberJoin')
+  grant_cog = cast(GrantMemberRole, grant_cog)
+  member_join_cog = cast(MemberJoin, member_join_cog)
 
-  found, err = await cog.grant_member_role(data.username)
+  found, err = await grant_cog.grant_member_role(data.username)
 
   if err:
     return web.json_response({"error": "Internal server error"}, status=500)
@@ -109,9 +123,17 @@ async def grant_member_role(request: Request):
     logger.warning(f'`{data.username}` のユーザーが見つかりませんでした')
     return web.json_response({"error": "user is not found."}, status=404)
 
-  err = await cog.manage_channel(data.username)
+  err = await grant_cog.manage_channel(data.username)
   if err:
     return web.json_response({"error": "Internal server error"}, status=500)
+
+  user, err = await crud.get_user_by_username(data.username)
+  assert user is not None
+  if err:
+    logger.error('ユーザー検索処理が異常終了しました')
+    return web.json_response({"error": "Internal server error"}, status=500)
+
+  await member_join_cog.grant_grade_role(user.user_id, user.grade)
 
   logger.info('ロール付与処理を正常終了しました')
   return web.json_response({"ok": "accepted"}, status=200)
@@ -142,26 +164,28 @@ async def hmac_auth_middleware(
     signature = body.signature
     year = body.year
 
-    if abs(time.time() - dt.fromisoformat(timestamp).timestamp()) > ALLOWED_TIMESTAMP_DIFF:
+    if abs(time.time() - dt.fromisoformat(timestamp).timestamp())\
+      > ALLOWED_TIMESTAMP_DIFF:
       raise ValueError("Timestamp out of range")
 
     if not verify_signature(data, timestamp, signature):
       raise ValueError("Invalid signature")
 
   except ValidationError:
-    # logger.warning('An unauthorized access detected')
+    # logger.warning('An unauthorized access has been detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401,
     )
   except json.JSONDecodeError:
+    # logger.warning('An unauthorized access has been detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401
     )
   except Exception as e:
-    logger.exception(e)
-    # logger.warning('An unauthorized access detected')
+    # logger.exception(e)
+    # logger.warning('An unauthorized access has been detected')
     return web.json_response(
       {"error": "Unauthorized"},
       status=401
@@ -174,13 +198,15 @@ async def hmac_auth_middleware(
   if db_year is None:
     logger.critical(
       'member roleが紐付けられていません。' \
-      '/link_member_roleコマンドで今年度のmember roleへの紐付けを行ってください'
+      '/link_member_roleコマンドで今年度のmember roleへの'\
+      '紐付けを行ってください'
     )
 
   if year != db_year:
     return web.json_response(
       {
-        "error": f"The form you submitted has been outdated. The current version is {year}"
+        "error": "The form you submitted has been outdated. "\
+        f"The current version is {year}"
       },
       status=400
     )

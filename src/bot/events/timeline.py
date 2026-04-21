@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import db.crud as crud
+import src.db.crud as crud
 
 JST = tz(td(hours=9), 'JST')
 logger = logging.getLogger('huitLogger')
@@ -135,11 +135,11 @@ class Timeline(commands.Cog):
     timeline_message = await timeline_channel.fetch_message(timeline_message_id)
     await timeline_message.edit(embed=embed)
 
-    print('on_message_edit completed')
+    logger.debug('on_message_edit completed')
 
   @commands.Cog.listener()
   async def on_message_delete(self, message: discord.Message):  # noqa: D102
-    logger.info('on_message_delete called')
+    logger.debug('on_message_delete called')
 
     timeline_message_id, err = await crud.get_timeline_message_id(message.id)
     if err:
@@ -165,7 +165,7 @@ class Timeline(commands.Cog):
     if err:
       return
 
-    logger.info('on_message_delete completed')
+    logger.debug('on_message_delete completed')
 
 async def setup(bot: commands.Bot):  # noqa: D103
   await bot.add_cog(Timeline(bot))

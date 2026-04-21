@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.handlers import DiscordHandler
+from src.utils.handlers import DiscordHandler
 
 
 class Log(commands.Cog):

@@ -1,3 +1,5 @@
-from datetime import time
+from datetime import date
 
-print(time(hour=9))
+
+a = date(2022, 2, 31)
+print(a)
