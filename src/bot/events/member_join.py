@@ -213,6 +213,11 @@ class MemberJoin(commands.Cog):
         f'お近くの{you.mention}までお知らせください'
     await interactions.response.send_message(msg)
 
+  @app_commands.command(name='test_get_name', description='a')
+  async def test_get_name(self, interaction: discord.Interaction):
+    await interaction.response.send_message('a')
+    await self.on_member_join(interaction.user)
+
   @commands.Cog.listener()
   async def on_member_join(self, member: discord.Member):  # noqa: D102
     assert self.bot.user is not None
@@ -228,7 +233,7 @@ class MemberJoin(commands.Cog):
         'フォームに入力した「Discord の ID」が実際のものと一致しているか'\
         '確認してください。\nフォームに誤りがあった場合はフォームを編集し、'\
         '正しいものに修正してください。\n'\
-        'https://forms.gle/7xzSLV9xvpciJoJYA\nわからない点があれば'\
+        'https://forms.gle/hXNotz3EprkmNipK6\nわからない点があれば'\
         '`@moderator` までご連絡ください。'
       await member.guild.system_channel.send(msg)
       return
