@@ -65,10 +65,8 @@ async def submission(request: Request):
   assert cog is not None
   cog = cast(MemberJoin, cog)
 
-  logger.info(user)
   if user is None:
     # nicknameが被っているかどうかの処理
-    return web.json_response({'ok': 'accepted'}, status=200)
     _, err = await crud.pre_register_user(
       data.username,
       data.nickname,
