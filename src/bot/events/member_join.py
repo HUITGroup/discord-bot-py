@@ -304,11 +304,11 @@ class MemberJoin(commands.Cog):
     after: discord.Member
   ):
     if before.name != after.name:
-      logging.debug('username update event')
+      logger.info('username update event')
 
       _, err = await crud.update_username(before.name, after.name)
       if err:
-        logging.error('username更新処理が異常終了しました')
+        logger.error('username更新処理が異常終了しました')
         return
 
   @tasks.loop(time=START)
