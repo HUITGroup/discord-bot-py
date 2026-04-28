@@ -298,7 +298,7 @@ class MemberJoin(commands.Cog):
       logger.error('ユーザーの削除処理が異常終了しました')
 
   @commands.Cog.listener()
-  async def on_member_update(  # noqa: D102
+  async def on_user_update(  # noqa: D102
     self,
     before: discord.Member,
     after: discord.Member
