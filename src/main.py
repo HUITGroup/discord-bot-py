@@ -30,8 +30,6 @@ EXTENSIONS = [
   'bot.events.timeline',
   'bot.events.grant_member_role',
   'bot.events.archive',
-  'tests.bot.commands.test_log',
-  'tests.bot.commands.check_role'
 ]
 
 with open(ABS / 'configs' / 'log_config.yaml') as f:

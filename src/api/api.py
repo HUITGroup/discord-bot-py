@@ -88,6 +88,7 @@ async def submission(request: Request):
       data.nickname,
       data.grade
     )
+    await cog.grant_grade_role(user.user_id, data.grade)
 
   if err:
     logger.error('ユーザーの事前登録処理が異常終了しました')
