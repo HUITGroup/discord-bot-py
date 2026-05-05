@@ -23,8 +23,6 @@ from src.utils.constants import (
   YOUR_ID,
 )
 
-ABS = Path(__file__).resolve().parents[3]
-load_dotenv(ABS / '.env')
 logger = logging.getLogger('huitLogger')
 
 JST = tz(td(hours=9), 'JST')

@@ -11,10 +11,6 @@ from dotenv import load_dotenv
 from src.db import crud
 from src.utils.constants import GUILD_ID
 
-ROOT = Path(__file__).resolve().parents[3]
-ABS = Path(__file__).resolve().parents[3]
-load_dotenv(ABS / '.env')
-
 MY_ID = 521879689447473152
 
 class Promotion(commands.Cog):
