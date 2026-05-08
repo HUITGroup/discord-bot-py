@@ -89,7 +89,7 @@ class GrantMemberRole(commands.Cog):
 
       category = discord.utils.get(guild.categories, name=category_name)
       assert category is not None
-      await channel.edit(category=category)
+      await channel.edit(category=category, sync_permissions=True)
 
     return False
 

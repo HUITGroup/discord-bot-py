@@ -47,7 +47,7 @@ class Promotion(commands.Cog):
         next_category = discord.utils.get(guild.categories, name=next_)
         assert next_category
 
-        await channel.edit(category=next_category)
+        await channel.edit(category=next_category, sync_permissions=True)
 
         logger.info(f'Moved {channel.name}')
 
@@ -85,7 +85,7 @@ class Promotion(commands.Cog):
 
       next_ = grade_dict[user.grade]
       category = discord.utils.get(guild.categories, name=next_)
-      await channel.edit(category=category)
+      await channel.edit(category=category, sync_permissions=True)
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(Promotion(bot))
