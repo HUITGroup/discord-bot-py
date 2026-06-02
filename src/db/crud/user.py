@@ -189,7 +189,7 @@ async def pre_register_user(
     session.add(
       UserData(
         username=username,
-        user_id=-1,
+        user_id=None,
         nickname=nickname,
         grade=grade
       )

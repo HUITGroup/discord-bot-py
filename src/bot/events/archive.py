@@ -163,10 +163,10 @@ class Archive(commands.Cog):
         continue
 
       roles = discord_user.roles
-      member_2025 = discord.utils.get(roles, name='member-2025')
+      member = discord.utils.get(roles, name='member-2026')
       guest = discord.utils.get(roles, name='guest')
 
-      if member_2025 is not None or guest is not None:
+      if member is not None or guest is not None:
         continue
 
       logger.info(f'archiving channel for {user.username}')
@@ -182,24 +182,6 @@ class Archive(commands.Cog):
       else:
         await self._archive_channel(channel)
 
-  @app_commands.command(name='archive_no_categories', description='a')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def archive_no_categories(self, interaction: discord.Interaction):
-    guild = self.bot.get_guild(GUILD_ID)
-    assert guild is not None
-    await interaction.response.send_message('（＾ω＾）')
-
-    for channel in guild.channels:
-      if channel.category is not None:
-        continue
-      if not channel.name.startswith('times_'):
-        continue
-      if not isinstance(channel, discord.TextChannel):
-        continue
-
-      print(channel.name)
-      await self._archive_channel(channel)
-
   @app_commands.command(name='archive', description='指定した名前のチャンネルをarchvieします')
   @app_commands.checks.has_permissions(administrator=True)
   async def archive_no_categories(self, interaction: discord.Interaction, channel_name: str):
@@ -213,49 +195,6 @@ class Archive(commands.Cog):
 
     await self._archive_channel(channel)
     await interaction.response.send_message('archiveしました')
-
-  @app_commands.command(name='sync_archive_categories', description='archiveチャンネルを同期するコマンド')
-  @app_commands.checks.has_permissions(administrator=True)
-  async def sync_archive_categories(self, interaction: discord.Interaction):
-    guild = self.bot.get_guild(GUILD_ID)
-    assert guild is not None
-
-    for discord_category in guild.categories:
-      if not discord_category.name.startswith('TIMES ARCHIVED'):
-        continue
-
-      _, _, category_number = discord_category.name.split()
-      category, err = await crud.get_archive_category_by_category_number(
-        GUILD_ID,
-        int(category_number)
-      )
-
-      if err:
-        logger.error('category検索処理が異常終了しました')
-        return
-
-      print(category_number)
-
-      if category is None:
-        _, err = await crud.create_archive_category(
-          GUILD_ID,
-          discord_category.id,
-          int(category_number),
-        )
-        if err:
-          logger.error('category登録処理が異常終了しました')
-          return
-      else:
-        _, err = await crud.sync_archive_category(
-          GUILD_ID,
-          discord_category.id,
-          int(category_number)
-        )
-        if err:
-          logger.error('category更新処理が異常終了しました')
-          return
-
-    await interaction.response.send_message('同期終了しました')
 
 async def setup(bot: commands.Bot):  # noqa: D103
   cog = Archive(bot)
