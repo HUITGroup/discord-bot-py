@@ -76,8 +76,12 @@ class GrantMemberRole(commands.Cog):
       channel = guild.get_channel(user.channel_id)
       assert isinstance(channel, discord.TextChannel)
 
-      if user.grade in {'b5', 'b6', 'm1', 'm2', 'd'}:
-        category_name = 'TIMES B5/B6/M/D'
+      if user.grade in {'b5', 'm1'}:
+        category_name = 'TIMES B5/M1'
+      elif user.grade in {'b6', 'm2'}:
+        category_name = 'TIMES B6/M2'
+      elif user.grade == 'd':
+        category_name = 'TIMES D'
       elif user.grade == 'other':
         category_name = 'TIMES other'
       else:
@@ -85,7 +89,7 @@ class GrantMemberRole(commands.Cog):
 
       category = discord.utils.get(guild.categories, name=category_name)
       assert category is not None
-      await channel.edit(category=category)
+      await channel.edit(category=category, sync_permissions=True)
 
     return False
 

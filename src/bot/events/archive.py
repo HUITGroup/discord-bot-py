@@ -94,7 +94,7 @@ class Archive(commands.Cog):
         logger.error('archive category作成処理が異常終了しました')
         return
 
-    await channel.edit(category=discord_category)
+    await channel.edit(category=discord_category, sync_permissions=True)
 
   @commands.Cog.listener()
   async def on_member_update(  # noqa: D102

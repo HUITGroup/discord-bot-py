@@ -11,10 +11,6 @@ from dotenv import load_dotenv
 from src.db import crud
 from src.utils.constants import GUILD_ID
 
-ROOT = Path(__file__).resolve().parents[3]
-ABS = Path(__file__).resolve().parents[3]
-load_dotenv(ABS / '.env')
-
 MY_ID = 521879689447473152
 
 class Promotion(commands.Cog):
@@ -51,7 +47,7 @@ class Promotion(commands.Cog):
         next_category = discord.utils.get(guild.categories, name=next_)
         assert next_category
 
-        await channel.edit(category=next_category)
+        await channel.edit(category=next_category, sync_permissions=True)
 
         logger.info(f'Moved {channel.name}')
 
@@ -89,7 +85,7 @@ class Promotion(commands.Cog):
 
       next_ = grade_dict[user.grade]
       category = discord.utils.get(guild.categories, name=next_)
-      await channel.edit(category=category)
+      await channel.edit(category=category, sync_permissions=True)
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(Promotion(bot))
