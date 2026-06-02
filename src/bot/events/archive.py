@@ -169,17 +169,18 @@ class Archive(commands.Cog):
       if member is not None or guest is not None:
         continue
 
-      logger.info(f'archiving channel for {user.username}')
 
       channel = guild.get_channel(user.channel_id)
       assert isinstance(channel, discord.TextChannel)
 
       category = channel.category
       if category is None:
+        logger.info(f'archiving channel for {user.username}')
         await self._archive_channel(channel)
       elif category.name.startswith('TIMES ARCHIVED'):
-        return
+        continue
       else:
+        logger.info(f'archiving channel for {user.username}')
         await self._archive_channel(channel)
 
   @app_commands.command(name='archive', description='指定した名前のチャンネルをarchvieします')
