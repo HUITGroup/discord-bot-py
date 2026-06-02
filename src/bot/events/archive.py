@@ -171,6 +171,10 @@ class Archive(commands.Cog):
 
 
       channel = guild.get_channel(user.channel_id)
+      if channel is None:
+        logger.warning(f'no channel was found for {user.username}')
+        continue
+
       assert isinstance(channel, discord.TextChannel)
 
       category = channel.category
