@@ -137,7 +137,52 @@ class Archive(commands.Cog):
     else:
       await self._archive_channel(channel)
 
-  @app_commands.command(name='archive', description='指定した名前のチャンネルをarchiveします')
+  @app_commands.command(
+    name='archive_all',
+    description='archive all unused times',
+  )
+  @app_commands.checks.has_permissions(administrator=True)
+  async def archive_all(self, interaction: discord.Interaction):
+    await interaction.response.send_message('（＾ω＾）')
+    users, err = await crud.get_all_users()
+    if err:
+      print('ee')
+      return
+    assert users is not None
+
+    guild = self.bot.get_guild(GUILD_ID)
+    assert guild is not None
+
+    for user in users:
+      if user.channel_id is None:
+        logger.warning(f'skipped: no channel id for {user.username} was found')
+        continue
+
+      discord_user = guild.get_member(user.user_id)
+      if discord_user is None:
+        continue
+
+      roles = discord_user.roles
+      member = discord.utils.get(roles, name='member-2026')
+      guest = discord.utils.get(roles, name='guest')
+
+      if member is not None or guest is not None:
+        continue
+
+      logger.info(f'archiving channel for {user.username}')
+
+      channel = guild.get_channel(user.channel_id)
+      assert isinstance(channel, discord.TextChannel)
+
+      category = channel.category
+      if category is None:
+        await self._archive_channel(channel)
+      elif category.name.startswith('TIMES ARCHIVED'):
+        return
+      else:
+        await self._archive_channel(channel)
+
+  @app_commands.command(name='archive', description='指定した名前のチャンネルをarchvieします')
   @app_commands.checks.has_permissions(administrator=True)
   async def archive_no_categories(self, interaction: discord.Interaction, channel_name: str):
     guild = self.bot.get_guild(GUILD_ID)

@@ -26,7 +26,7 @@ class UserData(Base):
   __tablename__ = "user_data"
 
   username: Mapped[str] = mapped_column(String(256), primary_key=True)
-  user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+  user_id: Mapped[int] = mapped_column(BigInteger, nullable=True, unique=True)
   nickname: Mapped[str] = mapped_column(String(256), nullable=False)
   grade: Mapped[str] = mapped_column(
     String(5),
@@ -37,7 +37,7 @@ class UserData(Base):
     ),
     nullable=False
   )
-  channel_id: Mapped[int|None] = mapped_column(BigInteger)
+  channel_id: Mapped[int|None] = mapped_column(BigInteger, nullable=True, unique=True)
   deadline: Mapped[Date|None] = mapped_column(Date)
 
 class ArchiveCategory(Base):
